@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "sms-ponto-digital-consulta"
+version = "0.1.0"
+description = ""
+authors = ["Paulo Roberto De Morais <prmorais1302@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+streamlit = "^1.36.0"
+pandas = "^2.2.2"
+python-dotenv = "^1.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
