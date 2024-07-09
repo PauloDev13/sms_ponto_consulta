@@ -4,6 +4,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import TimeoutException
+
+import streamlit as st
 import os
 from time import sleep
 from dotenv import load_dotenv
@@ -29,17 +31,16 @@ def login():
         # driver.get(url_login)
         driver.get('https://natal.rn.gov.br/sms/ponto/index.php')
 
-        # Aguarde o carregamento da página de login
+        # Verfica se os campos de login e senha já foram carregados
         WebDriverWait(driver, 10).until(
             ec.presence_of_element_located((By.XPATH, '//*[@id="cpf"]'))
         )
-
         WebDriverWait(driver, 10).until(
             ec.presence_of_element_located((By.XPATH, '//*[@id="senha"]'))
         )
 
-        driver.find_element(By.XPATH, '//*[@id="cpf"]').send_keys(username)
-        # driver.find_element(By.XPATH, '//*[@id="senha"]').send_keys(password)
+        driver.find_element(by=By.XPATH, value='//*[@id="cpf"]').send_keys(username)
+        driver.find_element(By.XPATH, '//*[@id="senha"]').send_keys(password)
 
         # Espera 30 segundos
         sleep(30)
@@ -54,12 +55,17 @@ def login():
         )
 
         # Aguarda até que a URL mude após o login
-        # WebDriverWait(driver, 10).until(ec.url_contains(url_login))
         WebDriverWait(driver, 10).until(ec.url_contains('https://natal.rn.gov.br/sms/ponto/index.php'))
+        success = st.success('Login feito com sucesso!')
+        sleep(3)
+        success.empty()
         return True
 
     except TimeoutException:
-        print("Erro ao fazer login. Verifique suas credenciais, URL e seletores.")
+        error = st.error('Erro ao fazer login. Verifique suas credenciais.')
+        sleep(3)
+        error.empty()
+        print("Erro ao fazer login. Verifique suas credenciais.")
         return False
     finally:
         driver.quit()
