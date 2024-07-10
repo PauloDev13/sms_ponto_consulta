@@ -17,7 +17,7 @@ load_dotenv()
 url_login = os.getenv("URL_BASE")
 
 # Obtém as credenciais do arquivo .env
-username = os.getenv("USERNAME")
+username = os.getenv("USER")
 password = os.getenv("PASSWORD")
 
 
@@ -28,44 +28,48 @@ def login():
     driver = webdriver.Chrome(options=options)
 
     try:
-        # driver.get(url_login)
-        driver.get('https://natal.rn.gov.br/sms/ponto/index.php')
+        driver.get(url_login)
 
         # Verfica se os campos de login e senha já foram carregados
         WebDriverWait(driver, 10).until(
-            ec.presence_of_element_located((By.XPATH, '//*[@id="cpf"]'))
+            ec.presence_of_element_located((By.XPATH, "//*[@id='cpf']"))
         )
         WebDriverWait(driver, 10).until(
-            ec.presence_of_element_located((By.XPATH, '//*[@id="senha"]'))
+            ec.presence_of_element_located((By.XPATH, "//*[@id='senha']"))
         )
 
-        driver.find_element(by=By.XPATH, value='//*[@id="cpf"]').send_keys(username)
-        driver.find_element(By.XPATH, '//*[@id="senha"]').send_keys(password)
+        sleep(2)
+        driver.find_element(By.XPATH, "//*[@id='cpf']").send_keys(username)
+        sleep(2)
+        driver.find_element(By.XPATH, "//*[@id='senha']").send_keys(password)
+
+        # Localiza o primeiro Iframe da página e entra nele
+        driver.switch_to.frame(0)
+        sleep(2)
+        # Localiza dentro Iframe o elemento que tem o box do recaptcha e clica nele
+        driver.find_element(by=By.XPATH, value="//*[@id='recaptcha-anchor']").click()
+        # cap.click()
+        # Sai do Iframe e volta para o html principal
+        driver.switch_to.default_content()
 
         # Espera 30 segundos
-        sleep(30)
+        sleep(60)
 
         # Clique no botão de login
         button_login = driver.find_element(by=By.XPATH, value="//*[@id='form']/input")
         button_login.click()
 
-        # Verifique se o login foi bem-sucedido
-        WebDriverWait(driver, 10).until(
-            ec.presence_of_element_located((By.CLASS_NAME, "grafico_grande"))
-        )
-
         # Aguarda até que a URL mude após o login
-        WebDriverWait(driver, 10).until(ec.url_contains('https://natal.rn.gov.br/sms/ponto/index.php'))
+        WebDriverWait(driver, 10).until(ec.url_contains('https://natal.rn.gov.br/sms/ponto/interno/inicio.php'))
         success = st.success('Login feito com sucesso!')
         sleep(3)
         success.empty()
-        return True
+        return driver
 
     except TimeoutException:
         error = st.error('Erro ao fazer login. Verifique suas credenciais.')
         sleep(3)
         error.empty()
-        print("Erro ao fazer login. Verifique suas credenciais.")
-        return False
-    finally:
-        driver.quit()
+        return None
+    # finally:
+    #     driver.quit()
