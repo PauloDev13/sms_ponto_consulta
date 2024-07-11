@@ -63,13 +63,11 @@ def login():
 
         # Aguarda até que a URL mude após o login
         WebDriverWait(driver, 10).until(ec.url_contains('https://natal.rn.gov.br/sms/ponto/interno/inicio.php'))
-        success = st.success('Login realizado com sucesso!')
-        sleep(3)
-        success.empty()
+
         return driver
 
     except TimeoutException:
         error = st.error('Erro ao fazer login. Verifique suas credenciais.')
-        sleep(3)
+        sleep(2)
         error.empty()
         return None

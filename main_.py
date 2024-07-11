@@ -1,6 +1,8 @@
 import streamlit as st
 from selenium import webdriver
 
+from time import sleep
+
 from services import authenticate
 from utils import extrator_data
 
@@ -33,27 +35,31 @@ with st.form(key='form_date'):
         # Verifica se o usuário está logado
         if 'driver' not in st.session_state:
             if driver := authenticate.login():
-                st.session_state.driver = driver  # Armazena o driver na sessão
-                print('ENTRA O CÓDIGO PARA A PRIMEIRA PESQUISA')
+                # Armazena o driver na sessão
+                st.session_state.driver = driver
 
                 with st.spinner('Gerando arquivo...'):
                     result = extrator_data.data_fetch(
                         cpf, month_start, year_start, month_end, year_end, st.session_state.driver
                     )
                 if result:
-                    st.success('Arquivo criado com sucesso!')
+                    success = st.success('Arquivo criado com sucesso!')
+                    sleep(2)
+                    success.empty()
 
         else:
             print('JÁ EXISTE SESSÃO ABERTA')
 
             if new_search:
-                print('ENTRA O CÓDIGO PARA NOVAS CONSULTAS SEM NOVO LOGIN')
+                # print('ENTRA O CÓDIGO PARA NOVAS CONSULTAS SEM NOVO LOGIN')
                 with st.spinner('Gerando arquivo...'):
                     result = extrator_data.data_fetch(
                         cpf, month_start, year_start, month_end, year_end, st.session_state.driver
                     )
                 if result:
-                    st.success('Arquivo criado com sucesso!')
+                    success = st.success('Arquivo criado com sucesso!')
+                    sleep(2)
+                    success.empty()
 
 st.stop()
 
