@@ -1,27 +1,26 @@
-# arquivo: login.py
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support import expected_conditions as ec
 
-import streamlit as st
 import os
+import streamlit as st
 from time import sleep
 from dotenv import load_dotenv
 
-# Carrega variáveis de ambiente do arquivo .env
+# Carrega o arquivo .env
 load_dotenv()
 
-# URL do site
+# URL da página de login e confirmação de login
 url_login = os.getenv("URL_BASE")
+url_init = os.getenv("URL_INIT")
 
-# Obtém as credenciais do arquivo .env
+# Ler as credenciais do usuário no arquivo .env
 username = os.getenv("USER")
 password = os.getenv("PASSWORD")
 
-
+# FUNÇÃO LOGIN
 def login():
     # Configuração do WebDriver
     options = webdriver.ChromeOptions()
@@ -29,45 +28,71 @@ def login():
     driver = webdriver.Chrome(options=options)
 
     try:
+        # Acessa a URL que exibe a página de login
         driver.get(url_login)
 
-        # Verfica se os campos de login e senha já foram carregados
+        # Verfica se a página HTML carregou os campos de login e senha
         WebDriverWait(driver, 10).until(
             ec.presence_of_element_located((By.XPATH, "//*[@id='cpf']"))
         )
-
         WebDriverWait(driver, 10).until(
             ec.presence_of_element_located((By.XPATH, "//*[@id='senha']"))
         )
 
-        sleep(2)
-        # driver.find_element(By.XPATH, '//*[@id="cpf"]').send_keys(username)
-        driver.find_element(by=By.XPATH, value="//*[@id='cpf']").send_keys(username)
-
-        sleep(2)
+        # Acessa o campo de login, insere o login, espera 1 segundo, acessa o campo senha e insere a senha
+        driver.find_element(By.XPATH, '//*[@id="cpf"]').send_keys(username)
+        sleep(1)
         driver.find_element(By.XPATH, "//*[@id='senha']").send_keys(password)
 
-        # Localiza o primeiro Iframe da página e entra nele
-        driver.switch_to.frame(0)
-        # Localiza dentro Iframe o elemento que tem o box do recaptcha e clica nele
-        driver.find_element(by=By.XPATH, value="//*[@id='recaptcha-anchor']").click()
-        # cap.click()
+        # Localiza o primeiro Iframe da página, entra nele, espera 1 segundo
+        # Localiza dentro Iframe o elemento que tem o box do recaptcha e clica
         # Sai do Iframe e volta para o html principal
+        # Espera 30 segundos para que o usuário digite o captcha, se aparecer
+        driver.switch_to.frame(0)
+        driver.find_element(by=By.XPATH, value="//*[@id='recaptcha-anchor']").click()
         driver.switch_to.default_content()
-        # Espera 30 segundos
         sleep(30)
 
-        # Clique no botão de login
+        # Localiza o botão de login e clica
         button_login = driver.find_element(by=By.XPATH, value="//*[@id='form']/input")
         button_login.click()
 
-        # Aguarda até que a URL mude após o login
-        WebDriverWait(driver, 10).until(ec.url_contains('https://natal.rn.gov.br/sms/ponto/interno/inicio.php'))
+        # Checa se a URL da página inicial foi carregada no navegador
+        load_page = WebDriverWait(driver, 10).until(
+            ec.url_contains(url_init)
+        )
 
+        # Se a página inicial carregou, exibe mensagem de sucesso
+        # Se não, exibe mensagem de alerta, espera 2 segundo e fecha a mensagem
+        if load_page:
+            success = st.success('Página inicial carregada!')
+            sleep(3)
+            success.empty()
+        else:
+            warning = st.warning('Falha ao carregar página inicial! Tente novamente.')
+            sleep(3)
+            warning.empty()
+
+        # Retorna uma instância do navegador.
         return driver
 
+    # Se ocorrer erro no processo de login, Exibe mensagem,
+    # espera 3 segundos, fecha a mensagem e retorna None
     except TimeoutException:
         error = st.error('Erro ao fazer login. Verifique suas credenciais.')
-        sleep(2)
+        sleep(3)
         error.empty()
         return None
+
+
+# FUNÇÃO LOGOUT
+def logout():
+    # Se houver uma sessão ativa, encerra a cessão, deleta a sessão do estado (state),
+    # exibe mensagem de sucesso, espera 3 segundos e fecha a mensagem
+    if 'driver' in st.session_state:
+        st.session_state.driver.quit()
+        del st.session_state.driver
+
+        success = st.success('Aplicação encerrada!')
+        sleep(3)
+        success.empty()
