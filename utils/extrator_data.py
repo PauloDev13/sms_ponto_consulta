@@ -45,12 +45,23 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
             month = current_date.month
             year = current_date.year
 
+            # Monta e atribui a variável 'table' a URL com os query params
+            # da pesquisa e abre no navegador
             url_search = f'{url_data}?cpf={cpf}&mes={month}&ano={year}'
             driver.get(url_search)
 
             try:
-                # Monta e atribui a variável 'table' a URL com os query params
-                # da pesquisa e abre no navegador
+                # Verifica se o elemento HTML contém a tag
+                WebDriverWait(driver, 10).until(
+                    ec.presence_of_element_located(
+                        (By.XPATH, "/html/body/div[2]/div/div[2]/div[2]/div[4]/div/span/font[1]")
+                    )
+                )
+                # Procura e atribui a variável 'employee_name' o conteúdo da tag
+                employee_name = driver.find_element(
+                    By.XPATH, "/html/body/div[2]/div/div[2]/div[2]/div[4]/div/span/font[1]"
+                ).text
+                # Verifica se o elemento HTML contém a tag table
                 table = WebDriverWait(driver, 10).until(
                     ec.presence_of_element_located((By.XPATH, "//*[@id='mesatual']/table"))
                 )
@@ -59,30 +70,40 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 # e atribui o resultado à variável 'soup'
                 soup_table = BeautifulSoup(table.get_attribute("outerHTML"), 'html.parser')
 
-                # Utiliza a biblioteca Pandas montar um DataFrame com os dados
-                # da tabela primeira tabela encontrada no HTML
+                # Utiliza a biblioteca Pandas para montar um DataFrame com os dados
+                # da primeira tabela encontrada no HTML
                 df_month = pd.read_html(StringIO(str(soup_table)))[0]
 
-                # Cria no DataFrame uma linha com mês/ano que será inserida
-                # separando os dados de cada mês
-                month_year_label = f'PONTO ELETRÔNICO MÊS/ANO: {month:02d}/{year}'
-                df_separator = pd.DataFrame([[month_year_label] + [''] * (df_month.shape[1] - 1)],
-                                            columns=df_month.columns)
 
                 # Adiciona a linha separadora ao DataFrame do mês
-                df_month = pd.concat([df_separator, df_month], ignore_index=True)
+                # df_month = pd.concat([df_separator, df_month], ignore_index=True)
 
                 # Se o ano não existir dentro do DataFrame 'data_by_year',
                 # adiciona-o, caso contrário concatena com o conteúdo já existente
                 if year not in data_by_year:
                     data_by_year[year] = df_month
                 else:
-                    data_by_year[year] = pd.concat([data_by_year[year], df_month], ignore_index=True)
+                    # Cria as linhas a serem inseridas
+                    # Cria no DataFrame uma linha com mês/ano que será inserida
+                    # separando os dados de cada mês
+                    empty_row = pd.DataFrame([[''] * len(df_month.columns)], columns=df_month.columns)
+
+                    employee_row = f'Detalhamento do Ponto Digital - {employee_name} - {month:02d}/{year}'
+                    data_employee_row = pd.DataFrame([[employee_row] + [''] * (df_month.shape[1] - 1)],
+                                                columns=df_month.columns)
+
+                    header_row = pd.DataFrame([df_month.columns], columns=df_month.columns)
+
+                    # Concatena as linhas com o DataFrame do mês atual
+                    data_by_year[year] = pd.concat(
+                        [data_by_year[year], empty_row, data_employee_row, header_row, df_month], ignore_index=True)
+
 
             # Se ocorrer erro durante o processo de coleta e montagem de dados no DataFrame,
             # exibe mensagem de erro, espera 2 segundos e fecha a mensagem
             except TimeoutException:
-                utils.default_msg(f'Erro ao montar dados carregados da tabela para {month}/{year}', 'error')
+                utils.default_msg(
+                    f'Erro ao montar dados carregados da tabela para {month}/{year}', 'error')
 
             current_date += datetime.timedelta(days=32)
             current_date = current_date.replace(day=1)
@@ -93,9 +114,9 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
         # Itera sobre as chaves (anos) e valores (DataFrames) do dicionário
         # e cria o arquivo excel com os dados agrupados por ano em cada aba e salva na pasta BOT
-        with pd.ExcelWriter(fr'{file_path}\{cpf}.xlsx', engine='xlsxwriter') as writer:
+        with pd.ExcelWriter(fr'{file_path}\{employee_name}_{cpf}.xlsx', engine='xlsxwriter') as writer:
             for year, df_year in data_by_year.items():
-                df_year.to_excel(writer, sheet_name=str(year), index=False, startrow=1)
+                df_year.to_excel(writer, sheet_name=str(year), index=False, startrow=0)
                 workbook = writer.book
                 worksheet = writer.sheets[str(year)]
 

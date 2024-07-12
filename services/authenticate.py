@@ -67,8 +67,7 @@ def login():
         # Se a página inicial carregou, exibe mensagem de sucesso
         # Se não, exibe mensagem de alerta
         if load_page:
-            print("Login Successful")
-            # utils.default_msg('Página principal carregada com sucesso!', 'success')
+            utils.default_msg('Página principal carregada com sucesso!', 'success')
 
         else:
             utils.default_msg('Falha ao carregar página inicial! Tente novamente.', 'info')
