@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as ec
+from selenium.common.exceptions import ElementClickInterceptedException
 
 import os
 import streamlit as st
@@ -14,11 +15,9 @@ from utils import utils
 # Carrega o arquivo .env
 load_dotenv()
 
-# URL da página de login e confirmação de login
+# Atribuições das variáveis declaradas no .env
 url_login = os.getenv("URL_BASE")
 url_init = os.getenv("URL_INIT")
-
-# Ler as credenciais do usuário no arquivo .env
 username = os.getenv("USER")
 password = os.getenv("PASSWORD")
 
@@ -34,17 +33,21 @@ def login():
         driver.get(url_login)
 
         # Verfica se a página HTML carregou os campos de login e senha
-        WebDriverWait(driver, 10).until(
+        load_login = WebDriverWait(driver, 10).until(
             ec.presence_of_element_located((By.XPATH, "//*[@id='cpf']"))
         )
-        WebDriverWait(driver, 10).until(
+        load_senha = WebDriverWait(driver, 10).until(
             ec.presence_of_element_located((By.XPATH, "//*[@id='senha']"))
         )
 
-        # Acessa o campo de login, insere o login, espera 1 segundo, acessa o campo senha e insere a senha
-        driver.find_element(By.XPATH, '//*[@id="cpf"]').send_keys(username)
-        sleep(1)
-        driver.find_element(By.XPATH, "//*[@id='senha']").send_keys(password)
+        if load_login and load_senha:
+            # Acessa o campo de login, insere o login, espera 1 segundo, acessa o campo senha e insere a senha
+            driver.find_element(By.XPATH, '//*[@id="cpf"]').send_keys(username)
+            sleep(1)
+            driver.find_element(By.XPATH, "//*[@id='senha']").send_keys(password)
+        else:
+            utils.default_msg('Erro ao identificar TAGs de login', 'error')
+            st.stop()
 
         # Localiza o primeiro Iframe da página, entra nele, espera 1 segundo
         # Localiza dentro Iframe o elemento que tem o box do recaptcha e clica
@@ -67,7 +70,7 @@ def login():
         # Se a página inicial carregou, exibe mensagem de sucesso
         # Se não, exibe mensagem de alerta
         if load_page:
-            utils.default_msg('Página principal carregada com sucesso!', 'success')
+            utils.default_msg('Página inicial carregada com sucesso!', 'success')
 
         else:
             utils.default_msg('Falha ao carregar página inicial! Tente novamente.', 'info')
@@ -75,10 +78,16 @@ def login():
         # Retorna uma instância do navegador.
         return driver
 
-    # Se ocorrer erro no processo de login, Exibe mensagem,
-    # espera 3 segundos, fecha a mensagem e retorna None
-    except TimeoutException:
-        utils.default_msg('Arquivo criado com sucesso!', 'error')
+    # Se ocorrer erro no processo de login exibe mensagem
+    except ElementClickInterceptedException as e:
+        utils.default_msg('Erro ao clicar num elemento da página! Tente novamente', 'error')
+        print(f'Erro stacktrace: {e}')
+        logout()
+        return None
+    except TimeoutException as ex:
+        utils.default_msg('A pagina demorou a responder! Tente novamente', 'error')
+        print(f'Erro stacktrace: {ex}')
+        logout()
         return None
 
 
