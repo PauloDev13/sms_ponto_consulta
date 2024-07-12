@@ -18,6 +18,8 @@ import logging
 import datetime
 from dotenv import load_dotenv
 
+from utils import utils
+
 # Formata as mensagens de log
 # logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -25,7 +27,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Ler a URL base que vai montar a busca dos dados
-url_data = os.getenv("URL_DATA")
+url_data = os.getenv('URL_DATA')
+file_path = os.getenv('PATH_FILE_BASE')
 
 
 def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
@@ -79,11 +82,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
             # Se ocorrer erro durante o processo de coleta e montagem de dados no DataFrame,
             # exibe mensagem de erro, espera 2 segundos e fecha a mensagem
             except TimeoutException:
-                error = st.error(f'Erro ao montar dados carregados da tabela para {month}/{year}')
-                sleep(2)
-                error.empty()
-
-                print(f'Erro ao montar dados carregados da tabela para {month}/{year}')
+                utils.default_msg(f'Erro ao montar dados carregados da tabela para {month}/{year}', 'error')
 
             current_date += datetime.timedelta(days=32)
             current_date = current_date.replace(day=1)
@@ -94,7 +93,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
         # Itera sobre as chaves (anos) e valores (DataFrames) do dicionário
         # e cria o arquivo excel com os dados agrupados por ano em cada aba e salva na pasta BOT
-        with pd.ExcelWriter(fr'C:\Users\paulo.morais\Desktop\BOT\{cpf}.xlsx', engine='xlsxwriter') as writer:
+        with pd.ExcelWriter(fr'{file_path}\{cpf}.xlsx', engine='xlsxwriter') as writer:
             for year, df_year in data_by_year.items():
                 df_year.to_excel(writer, sheet_name=str(year), index=False, startrow=1)
                 workbook = writer.book
@@ -106,9 +105,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
     # Se ocorrer erro durante o processo, exibe mensagem,
     # espera 2 segundos e fecha a mensagem
     except Exception as e:
-        error = st.error(f'Erro ao gerar arquivo: {e}')
-        sleep(2)
-        error.empty()
+        utils.default_msg('Erro ao gerar arquivo!', 'error')
 
         print(f'Erro ao gerar arquivo: {e}')
 

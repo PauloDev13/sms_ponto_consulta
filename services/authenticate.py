@@ -9,6 +9,8 @@ import streamlit as st
 from time import sleep
 from dotenv import load_dotenv
 
+from utils import utils
+
 # Carrega o arquivo .env
 load_dotenv()
 
@@ -63,15 +65,13 @@ def login():
         )
 
         # Se a página inicial carregou, exibe mensagem de sucesso
-        # Se não, exibe mensagem de alerta, espera 2 segundo e fecha a mensagem
+        # Se não, exibe mensagem de alerta
         if load_page:
-            success = st.success('Página inicial carregada!')
-            sleep(3)
-            success.empty()
+            print("Login Successful")
+            # utils.default_msg('Página principal carregada com sucesso!', 'success')
+
         else:
-            warning = st.warning('Falha ao carregar página inicial! Tente novamente.')
-            sleep(3)
-            warning.empty()
+            utils.default_msg('Falha ao carregar página inicial! Tente novamente.', 'info')
 
         # Retorna uma instância do navegador.
         return driver
@@ -79,9 +79,7 @@ def login():
     # Se ocorrer erro no processo de login, Exibe mensagem,
     # espera 3 segundos, fecha a mensagem e retorna None
     except TimeoutException:
-        error = st.error('Erro ao fazer login. Verifique suas credenciais.')
-        sleep(3)
-        error.empty()
+        utils.default_msg('Arquivo criado com sucesso!', 'error')
         return None
 
 
@@ -93,6 +91,4 @@ def logout():
         st.session_state.driver.quit()
         del st.session_state.driver
 
-        success = st.success('Aplicação encerrada!')
-        sleep(3)
-        success.empty()
+        utils.default_msg('Aplicação encerrada!', 'info')
