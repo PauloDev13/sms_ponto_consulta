@@ -2,6 +2,9 @@ import streamlit as st
 
 from time import sleep
 
+from services import authenticate
+from utils import extrator_data
+
 
 # Função que insere '.' e '-' no número do CPF, caso tenha sido
 # informado somente números.
@@ -10,25 +13,23 @@ def format_cpf(cpf: str) -> str:
 
 
 # Instancia mensagem de alerta de acordo com os parâmetro informados
-def default_msg(msg: str, type_msg: any):
+def default_msg(msg: str, icon_msg: str):
     try:
-        match type_msg:
+        match icon_msg:
             case 'success':
-                type_msg = st.success(msg, icon='👍')
+                toast_msg = st.toast(msg, icon='👍')
             case 'warning':
-                type_msg = st.warning(msg, icon='👊')
+                toast_msg = st.toast(msg, icon='👊')
             case 'info':
-                type_msg = st.info(msg, icon='👆')
+                toast_msg = st.toast(msg, icon='👆')
             case _:
-                type_msg = st.error(msg, icon='👎')
-            # case 'error' :
-            #     type_msg = st.error(msg, icon='👎')
-        sleep(3)
-        type_msg.empty()
-        return type_msg
+                toast_msg = st.toast(msg, icon='👎')
+        # sleep(2)
+        # toast_msg.empty()
+        return toast_msg
 
     except Exception as ex:
-        utils.default_msg('Erro na messege', 'error')
+        default_msg('Erro na messege', 'error')
         print(f'Erro stacktrace: {ex}')
 
 # Função para validar as datas
@@ -41,11 +42,11 @@ def validate_dates(date_start, date_end):
             default_msg('A data final é obrigatória!', 'info')
             return False
         if date_start > date_end:
-            default_msg('A data de início não pode ser posterior à data final!', 'error')
+            default_msg('A data de início não pode ser posterior à data final!', 'info')
             return False
         return True
     except Exception as ex:
-        utils.default_msg('Erro ao validar datas', 'error')
+        default_msg('Erro ao validar datas', 'error')
         print(f'Erro stacktrace: {ex}')
 
 
@@ -82,5 +83,71 @@ def validate_cpf(cpf):
             default_msg('CPF inválido', 'info')
             return False
     except Exception as ex:
-        utils.default_msg('Erro ao validar CPF', 'error')
+        default_msg('Erro ao validar CPF', 'error')
         print(f'Erro stacktrace: {ex}')
+
+
+# Limpa os campos do formulário no Session State
+def fields_clear():
+    st.session_state['cpf'] = ''
+    st.session_state['date_start'] = None
+    st.session_state['date_end'] = None
+    default_msg('Arquivo criado com sucesso!', 'success')
+
+
+# Função de callback
+def form_callback():
+    session_callback = st.session_state
+
+    cpf_input = session_callback['cpf']
+    date_start = session_callback['date_start']
+    date_end = session_callback['date_end']
+
+    cpf_valid = validate_cpf(cpf_input)
+
+    if cpf_valid:
+        if len(cpf_input) == 11:
+            cpf_input = format_cpf(cpf_input)
+
+        dates_valid = validate_dates(date_start, date_end)
+
+
+    if cpf_valid and dates_valid:
+        month_start = date_start.month
+        year_start = date_start.year
+        month_end = date_end.month
+        year_end = date_end.year
+
+        # Verifica se existe uma sessão no Streamlit para o usuário logado
+        # Se NÃO, chama a função 'login' do módulo 'authenticate' que retorna uma instância do navegador
+        # Armazena a instância retornada numa sessão do Streamlit
+        if 'driver' not in st.session_state:
+            if driver := authenticate.login():
+                st.session_state.driver = driver
+                session_callback['driver'] = driver
+                driver.minimize_window()
+
+                # Exibe um spinner até que a funçao 'data_fetch'
+                # do módulo 'extrator_data' conclua a execução
+                with st.spinner('Gerando arquivo...'):
+                    result = extrator_data.data_fetch(
+                        cpf_input, month_start, year_start, month_end, year_end, session_callback.driver
+                    )
+
+                # Se a função retornar TRUE, o arquivo foi gerado com sucesso,
+                # limpa os campos do formulário e exibe mensagem de sucesso
+                if result:
+                    fields_clear()
+
+        else:
+            # Se já existir uma sessão aberta no Stremlit, repete o processo de geração do arquivo
+            with st.spinner('Gerando arquivo...'):
+                result = extrator_data.data_fetch(
+                    cpf_input, month_start, year_start, month_end, year_end, st.session_callback.driver
+                )
+
+            # Se a função retornar TRUE, o arquivo foi gerado com sucesso,
+            # limpa os campos do formulário e exibe mensagem de sucesso
+            if result:
+                fields_clear()
+

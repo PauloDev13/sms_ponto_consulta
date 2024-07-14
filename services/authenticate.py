@@ -1,9 +1,11 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import (
+    TimeoutException,
+    NoSuchWindowException,
+    ElementClickInterceptedException)
 from selenium.webdriver.support import expected_conditions as ec
-from selenium.common.exceptions import ElementClickInterceptedException
 
 import os
 import streamlit as st
@@ -90,6 +92,11 @@ def login():
         logout()
         return None
 
+    except NoSuchWindowException as ex_:
+        utils.default_msg('Falha no login! Tente novamente', 'error')
+        print(f'Erro stacktrace: {ex_}')
+        logout()
+        return None
 
 # FUNÇÃO LOGOUT
 def logout():
