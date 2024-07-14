@@ -13,17 +13,17 @@ st.title('Consulta ponto SMS')
 
 # Formulário para a digitação dos dados da pesquisa
 with st.form(key='form_date'):
-    cpf_input = st.text_input(label='CPF', placeholder='Informe o CPF (ex: 100.200.300-40)',
+    cpf_input = st.text_input('CPF', key='cpf', placeholder='Informe o CPF',
     )
     # Divide o form em duas colunas
     col1, col2 = st.columns(2)
 
     with col1:
-        date_start = st.date_input(label='Data de início:', format='DD/MM/YYYY')
-        submit_button = st.form_submit_button(label='Gerar arquivo', use_container_width=True)
+        date_start = st.date_input('Data de início:', key='date_start', format='DD/MM/YYYY')
+        submit_button = st.form_submit_button('Gerar arquivo', use_container_width=True)
     with col2:
-        date_end = st.date_input(label='Data final:', format='DD/MM/YYYY')
-        logout_button = st.form_submit_button(label='sair', use_container_width=True)
+        date_end = st.date_input('Data final:', key='date_end', format='DD/MM/YYYY')
+        logout_button = st.form_submit_button('Sair', use_container_width=True)
 
     # Extração de mês e ano das datas
     month_start = date_start.month

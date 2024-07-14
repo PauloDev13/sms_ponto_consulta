@@ -1,6 +1,48 @@
-# import streamlit as st
-#
-#
+import streamlit as st
+
+
+def validate_slider(num: int):
+    return num >= 5
+
+
+def validate_checkbox(bol: bool):
+    return True if bol else False
+
+
+def test():
+    with st.form(key='form'):
+        st.slider('Barra', 0, 15, 0, key='my_slider')
+        st.checkbox('Sim ou Não', key='my_checkbox')
+        st.form_submit_button('Submit', on_click=form_callback)
+
+
+def form_callback():
+    slider_valid = validate_slider(st.session_state['my_slider'])
+    checkbox_valid = validate_checkbox(st.session_state['my_checkbox'])
+
+    if not slider_valid:
+        st.error('O slider deve ser maior 5')
+
+    elif not checkbox_valid:
+        st.error('Marque o checkbox')
+
+    else:
+        slider_input = st.session_state['my_slider']
+        checkbox_input = st.session_state['my_checkbox']
+
+        st.write(f'VALOR DO SLIDE: {slider_input}')
+        st.write(f'VALOR DO SLIDE: {checkbox_input}')
+
+        st.session_state['my_slider'] = 0
+        st.session_state['my_checkbox'] = False
+
+        st.write(f'VALOR2 DO SLIDE: {st.session_state['my_slider']}')
+        st.write(f'VALOR2 DO SLIDE: {st.session_state['my_checkbox']}')
+
+
+if __name__ == '__main__':
+    test()
+
 # def validate_username(username):
 #     # Validação básica para username: deve ter pelo menos 5 caracteres
 #     return len(username) >= 5
