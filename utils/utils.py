@@ -17,15 +17,15 @@ def default_msg(msg: str, icon_msg: str):
     try:
         match icon_msg:
             case 'success':
-                toast_msg = st.toast(msg, icon='👍')
+                toast_msg = st.toast(msg, icon='✅')
             case 'warning':
-                toast_msg = st.toast(msg, icon='👊')
+                toast_msg = st.toast(msg, icon='⚠️')
             case 'info':
-                toast_msg = st.toast(msg, icon='👆')
+                toast_msg = st.toast(msg, icon='ℹ️')
             case _:
-                toast_msg = st.toast(msg, icon='👎')
-        # sleep(2)
-        # toast_msg.empty()
+                toast_msg = st.toast(msg, icon='🚨')
+        sleep(2)
+        toast_msg.empty()
         return toast_msg
 
     except Exception as ex:
@@ -97,21 +97,23 @@ def fields_clear():
 
 # Função de callback
 def form_callback():
-    session_callback = st.session_state
+    # Pega os valores digitados no formulário vindos no Session State
+    cpf_input = st.session_state['cpf']
+    date_start = st.session_state['date_start']
+    date_end = st.session_state['date_end']
 
-    cpf_input = session_callback['cpf']
-    date_start = session_callback['date_start']
-    date_end = session_callback['date_end']
-
+    # Valida o CPF
     cpf_valid = validate_cpf(cpf_input)
 
+    # Se o CPF for válido e tiver 11 números, formata aplicando uma máscara
     if cpf_valid:
         if len(cpf_input) == 11:
             cpf_input = format_cpf(cpf_input)
 
+        # Valida as datas
         dates_valid = validate_dates(date_start, date_end)
 
-
+    # Se datas e CPF forem válidas, extrai os meses e anos de inícil e final
     if cpf_valid and dates_valid:
         month_start = date_start.month
         year_start = date_start.year
@@ -124,14 +126,14 @@ def form_callback():
         if 'driver' not in st.session_state:
             if driver := authenticate.login():
                 st.session_state.driver = driver
-                session_callback['driver'] = driver
+                st.session_state['driver'] = driver
                 driver.minimize_window()
 
                 # Exibe um spinner até que a funçao 'data_fetch'
                 # do módulo 'extrator_data' conclua a execução
                 with st.spinner('Gerando arquivo...'):
                     result = extrator_data.data_fetch(
-                        cpf_input, month_start, year_start, month_end, year_end, session_callback.driver
+                        cpf_input, month_start, year_start, month_end, year_end, st.session_state.driver
                     )
 
                 # Se a função retornar TRUE, o arquivo foi gerado com sucesso,
@@ -143,7 +145,7 @@ def form_callback():
             # Se já existir uma sessão aberta no Stremlit, repete o processo de geração do arquivo
             with st.spinner('Gerando arquivo...'):
                 result = extrator_data.data_fetch(
-                    cpf_input, month_start, year_start, month_end, year_end, st.session_callback.driver
+                    cpf_input, month_start, year_start, month_end, year_end, st.session_state.driver
                 )
 
             # Se a função retornar TRUE, o arquivo foi gerado com sucesso,
