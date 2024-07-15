@@ -30,16 +30,17 @@ def main():
 
         with col1:
             st.date_input('Data de início:', key='date_start', format='DD/MM/YYYY')
-            submit_button = st.form_submit_button(
+            st.form_submit_button(
                 'Gerar arquivo', use_container_width=True,
                 on_click=utils.form_callback
             )
         with col2:
             st.date_input('Data final:', key='date_end', format='DD/MM/YYYY')
-            logout_button = st.form_submit_button(
-                'Sair', use_container_width=True,
-                on_click=authenticate.logout()
-            )
+            logout_button = st.form_submit_button('Sair', use_container_width=True)
+
+        # Fecha a Session State e encerra o navegador
+        if logout_button:
+            authenticate.logout()
 
 if __name__ == '__main__':
     main()

@@ -138,7 +138,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
         # Itera sobre as chaves (anos) e valores (DataFrames) do dicionário
         # e cria o arquivo excel com os dados agrupados por ano em cada aba e salva na pasta BOT
-        with pd.ExcelWriter(fr'{file_path}\{employee_name}_CPF_{cpf}.xlsx', engine='xlsxwriter') as writer:
+        with pd.ExcelWriter(fr'{file_path}\{employee_name} - CPF_{cpf}.xlsx', engine='xlsxwriter') as writer:
             for year, df_year in data_by_year.items():
                 df_year.to_excel(writer, sheet_name=str(year), index=False, startrow=0, header=False)
                 workbook = writer.book

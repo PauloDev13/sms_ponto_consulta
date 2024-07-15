@@ -58,7 +58,7 @@ def login():
         driver.switch_to.frame(0)
         driver.find_element(by=By.XPATH, value="//*[@id='recaptcha-anchor']").click()
         driver.switch_to.default_content()
-        sleep(30)
+        sleep(60)
 
         # Localiza o botão de login e clica
         button_login = driver.find_element(by=By.XPATH, value="//*[@id='form']/input")
