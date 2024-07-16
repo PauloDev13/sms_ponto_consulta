@@ -1,0 +1,9 @@
+version: '3.9'
+services:
+  streamlit:
+    container_name: streamlit_sms
+    build:
+      dockerfile: Dockerfile
+      context: ./
+    ports:
+      - '5000:8501'

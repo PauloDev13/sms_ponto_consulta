@@ -89,7 +89,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                     # Cria um DataFrame vazio somente com a linha do cabe;alho
                     data_by_year[year] = pd.DataFrame(columns=df_month.columns)
 
-                    # Cria uma linha que vai exibir a frase 'DETALHAMENTO DO PONTO DIGITAL'
+                    # Cria uma string com a frase 'DETALHAMENTO DO PONTO DIGITAL'
                     # concatenada com as variáveis 'employee_name', 'cpf', 'month_name' e 'year'
                     # que vai ser impressa no topo do arquivo Excel
                     data_by_year[year].loc[0, data_by_year[year].columns[0]] = (
@@ -104,8 +104,8 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                     data_by_year[year] = pd.concat(
                         [data_by_year[year], header_row, df_month], ignore_index=True)
                 else:
-                    # Cria uma linha vazia
-                    # empty_row = pd.DataFrame([[''] * len(df_month.columns)], columns=df_month.columns)
+                    # Cria uma linha vazia no início de cada mês
+                    empty_row = pd.DataFrame([[''] * len(df_month.columns)], columns=df_month.columns)
 
                     # Cria uma string com a frase DETALHAMENTO DO PONTO DIGITAL concatenada
                     # com as variáveis 'employee_name', 'cpf', 'month_name' e 'year'
@@ -136,8 +136,8 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
         for year, df in data_by_year.items():
             print(f"Ano: {year}, Número de Linhas: {len(df)}")
 
-        # Itera sobre as chaves (anos) e valores (DataFrames) do dicionário
-        # e cria o arquivo excel com os dados agrupados por ano em cada aba e salva na pasta BOT
+        # Itera sobre as chaves (anos) e valores (DataFrames) do dicionário,
+        # cria o arquivo excel com os dados agrupados por ano em cada aba e salva na pasta BOT
         with pd.ExcelWriter(fr'{file_path}\{employee_name} - CPF_{cpf}.xlsx', engine='xlsxwriter') as writer:
             for year, df_year in data_by_year.items():
                 df_year.to_excel(writer, sheet_name=str(year), index=False, startrow=0, header=False)
@@ -147,7 +147,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 # Define a formatação que será aplicada nas linhas
                 star_row_format = workbook.add_format({'bold': True, 'bg_color': '#FFFF00'})
 
-                # Obtém o índice da linha que contÉM a string 'DATA ENTRADA'
+                # Obtém o índice da linha que contém a string 'DATA ENTRADA'
                 row_index = df_year.index[df_year.iloc[:,0] == 'DATA ENTRADA'].tolist()[0]
 
 
