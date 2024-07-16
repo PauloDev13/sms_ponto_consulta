@@ -64,7 +64,7 @@ def login():
         button_login = driver.find_element(by=By.XPATH, value="//*[@id='form']/input")
         button_login.click()
 
-        sleep(2)
+        sleep(1)
         # Checa se a URL da página inicial foi carregada no navegador
         load_page = WebDriverWait(driver, 10).until(
             ec.url_contains(url_init)

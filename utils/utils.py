@@ -17,14 +17,18 @@ def default_msg(msg: str, icon_msg: str):
     try:
         match icon_msg:
             case 'success':
-                toast_msg = st.toast(msg, icon='✅')
+                toast_msg = st.success(msg, icon='✅')
+                # toast_msg = st.toast(msg, icon='✅')
             case 'warning':
-                toast_msg = st.toast(msg, icon='⚠️')
+                toast_msg = st.warning(msg, icon='⚠️')
+                # toast_msg = st.toast(msg, icon='⚠️')
             case 'info':
-                toast_msg = st.toast(msg, icon='ℹ️')
+                toast_msg = st.info(msg, icon='ℹ️')
+                # toast_msg = st.toast(msg, icon='ℹ️')
             case _:
-                toast_msg = st.toast(msg, icon='🚨')
-        sleep(2)
+                toast_msg = st.error(msg, icon='🚨')
+                # toast_msg = st.toast(msg, icon='🚨')
+        sleep(3)
         toast_msg.empty()
         return toast_msg
 
@@ -92,7 +96,6 @@ def fields_clear():
     st.session_state['cpf'] = ''
     st.session_state['date_start'] = None
     st.session_state['date_end'] = None
-    default_msg('Arquivo criado com sucesso!', 'success')
 
 
 # Função de callback
@@ -139,7 +142,10 @@ def form_callback():
                 # Se a função retornar TRUE, o arquivo foi gerado com sucesso,
                 # limpa os campos do formulário e exibe mensagem de sucesso
                 if result:
-                    fields_clear()
+                    default_msg('Arquivo criado com sucesso!', 'success')
+                    # Limpa o formulário
+                    # fields_clear()
+
 
         else:
             # Se já existir uma sessão aberta no Stremlit, repete o processo de geração do arquivo
@@ -151,5 +157,6 @@ def form_callback():
             # Se a função retornar TRUE, o arquivo foi gerado com sucesso,
             # limpa os campos do formulário e exibe mensagem de sucesso
             if result:
-                fields_clear()
-
+                default_msg('Arquivo criado com sucesso!', 'success')
+                # Limpa o formulário
+                # fields_clear()
