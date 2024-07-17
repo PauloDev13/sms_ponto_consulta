@@ -1,14 +1,41 @@
+import streamlit
 import streamlit as st
+import streamlit.web.cli as stcli
+import streamlit.runtime.scriptrunner.magic_funcs
+
 import pandas
+import pandas as pd
+
 import selenium
-import xlsxwriter
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import (
+    TimeoutException,
+    NoSuchWindowException,
+    ElementClickInterceptedException)
+from selenium.webdriver.support import expected_conditions as ec
+
 import dotenv
+from dotenv import load_dotenv
+
+from bs4 import BeautifulSoup
+
+from time import sleep
+import xlsxwriter
 import lxml
 import openpyxl
 import html5lib
-from bs4 import BeautifulSoup
-import streamlit.web.cli as stcli
 import os, sys
+
+import datetime
+import locale
+import calendar
+from io import StringIO
+
+from services import authenticate
+from utils import utils
+from utils import extractor_data
 
 import logging
 
@@ -31,56 +58,3 @@ if __name__ == '__main__':
     sys.exit(stcli.main())
 
 logging.debug("Finalizando setup.py")
-
-# import sys
-# from cx_Freeze import setup, Executable
-#
-# # Definindo a base corretamente para aplicações web
-# base = None
-# if sys.platform == 'win32':
-#     base = None  # Aplicação web não requer 'Win32GUI'
-#
-# # Função auxiliar para verificar se um módulo está disponível
-# def module_exists(module_name):
-#     spec = importlib.util.find_spec(module_name)
-#     return spec is not None
-#
-# build_exe_options = {
-#     'packages': [
-#         'streamlit',
-#         'pandas',
-#         'selenium',
-#         'html5lib',
-#         'bs4',
-#         'numpy',
-#         'numpy.core',
-#         'xlsxwriter',
-#         'lxml',
-#         'openpyxl'
-#     ],
-#     'include_files': [
-#         '.env',
-#         'main.py',
-#         'run_streamlit.py',
-#         ('utils/__init__.py', 'utils/__init__.py'),
-#         ('utils/extractor_data.py', 'utils/extractor_data.py'),
-#         ('utils/utils.py', 'utils/utils.py'),
-#         ('services/__init__.py', 'services/__init__.py'),
-#         ('services/authenticate.py', 'services/authenticate.py'),
-#         # Adicione outros arquivos necessários
-#     ],
-#     'bin_path_includes': [
-#         # Inclua caminhos para DLLs se necessário
-#     ],
-#     'excludes': [
-#         'tkinter',  # Excluir tkinter se não for necessário
-#     ],
-# }
-#
-# setup(
-#     name='sms_ponto_digital_consulta',
-#     version='0.1',
-#     description='Descrição da aplicação',
-#     options={'build_exe': build_exe_options},
-#     executables=[Executable('main.py', base=base, target_name='sms_ponto.exe')]
-# )
