@@ -3,7 +3,7 @@ import streamlit as st
 from time import sleep
 
 from services import authenticate
-from utils import extrator_data
+from utils import extractor_data
 
 
 # Função que insere '.' e '-' no número do CPF, caso tenha sido
@@ -135,7 +135,7 @@ def form_callback():
                 # Exibe um spinner até que a funçao 'data_fetch'
                 # do módulo 'extrator_data' conclua a execução
                 with st.spinner('Gerando arquivo...'):
-                    result = extrator_data.data_fetch(
+                    result = extractor_data.data_fetch(
                         cpf_input, month_start, year_start, month_end, year_end, st.session_state.driver
                     )
 
@@ -150,7 +150,7 @@ def form_callback():
         else:
             # Se já existir uma sessão aberta no Stremlit, repete o processo de geração do arquivo
             with st.spinner('Gerando arquivo...'):
-                result = extrator_data.data_fetch(
+                result = extractor_data.data_fetch(
                     cpf_input, month_start, year_start, month_end, year_end, st.session_state.driver
                 )
 
