@@ -1,7 +1,3 @@
-# arquivo: pesquisa.py
-import streamlit as st
-
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
@@ -11,19 +7,14 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 import os
-import logging
 import datetime
 import locale
 import calendar
-import xlsxwriter
-from time import sleep
 from io import StringIO
 from dotenv import load_dotenv
 
 from utils import utils
 
-# Formata as mensagens de log
-# logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Carrega o arquivo .env
 load_dotenv()
@@ -120,7 +111,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                     # Concatena os valores já existentes no Dataframe, para que o mesmo
                     # contenha as novas linhas criadas
                     data_by_year[year] = pd.concat(
-                        [data_by_year[year], data_employee_row, header_row, df_month], ignore_index=True)
+                        [data_by_year[year], empty_row, data_employee_row, header_row, df_month], ignore_index=True)
 
             # Se ocorrer erro durante o processo de coleta e montagem de dados no DataFrame,
             # exibe mensagem de erro, espera 2 segundos e fecha a mensagem

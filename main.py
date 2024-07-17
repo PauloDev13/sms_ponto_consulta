@@ -1,10 +1,13 @@
 import streamlit as st
-from selenium import webdriver
-
-from time import sleep
 
 from services import authenticate
-from utils import extractor_data, utils
+from utils import utils
+
+import logging
+
+# Configurando logs
+logging.basicConfig(level=logging.DEBUG, filename="main.log", filemode='w')
+logging.debug("Iniciando main.py")
 
 
 # Configuração do título da página do Streamlit
