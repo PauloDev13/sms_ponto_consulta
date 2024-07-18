@@ -1,10 +1,8 @@
 import streamlit
-import streamlit as st
 import streamlit.web.cli as stcli
 import streamlit.runtime.scriptrunner.magic_funcs
 
 import pandas
-import pandas as pd
 
 import selenium
 from selenium import webdriver
@@ -16,7 +14,6 @@ from selenium.common.exceptions import (
     ElementClickInterceptedException)
 from selenium.webdriver.support import expected_conditions as ec
 
-import dotenv
 from dotenv import load_dotenv
 
 from bs4 import BeautifulSoup
