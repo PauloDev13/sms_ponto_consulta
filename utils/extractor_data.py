@@ -71,14 +71,37 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 # e atribui o resultado à variável 'soup' como uma string
                 soup_table = BeautifulSoup(table.get_attribute("outerHTML"), 'html.parser')
 
-                # Utiliza a biblioteca Pandas para montar DataFrame com os dados
+                # Utiliza a biblioteca Pandas para montar DataFrame com todos os dados
                 # da primeira table encontrada no HTML
-                df_month = pd.read_html(StringIO(str(soup_table)))[0]
+                df_table = pd.read_html(StringIO(str(soup_table)))[0]
+
+                # Remove do dataframe (df_table) a coluna (EDITAR)
+                del df_table['EDITAR']
+
+                # Atualiza o dataframe (df_table) substituindo o conteúdo das colunas
+                # DATA SAÍDA, SAÍDA, TRABALHADA, HORA JUSTIFICADA e STATUS para uma string '---'
+                # nas linhas onde a coluna DATA ENTRADA tem as palavra 'JUSTIFICATIVA' ou 'AVISO'
+                df_table.loc[
+                    df_table['DATA ENTRADA'].str.contains('JUSTIFICATIVA')
+                    | df_table['DATA ENTRADA'].str.contains('AVISO'),
+                    ['DATA SAÍDA', 'SAÍDA', 'TRABALHADA', 'HORA JUSTIFICADA', 'STATUS']
+                ] = '---'
+
+                # Finaliza a limpeza dos dados criando um novo dataframe (df_result)
+                # com o seguintes critérios:
+                # 1 - Colunas TRABALHADA e HORA JUSTIFICADA difentes de '---'
+                # 2 - Colunas STATUS igual 'APROVADO' e DATA ENTRADA igual a 'JUSTIFICATIVA'
+                df_result = df_table[
+                    (df_table['TRABALHADA'] != '---')
+                    | (df_table['HORA JUSTIFICADA'] != '---')
+                    | (df_table['STATUS'] == 'APROVADO')
+                    | (df_table['DATA ENTRADA'] == 'JUSTIFICATIVA')
+                ]
 
                 # Se o ano não existir no dicionário 'data_by_year', adiciona-o
                 if year not in data_by_year:
-                    # Cria um DataFrame vazio somente com a linha do cabe;alho
-                    data_by_year[year] = pd.DataFrame(columns=df_month.columns)
+                    # Cria um DataFrame vazio somente com a linha do cabeçalho
+                    data_by_year[year] = pd.DataFrame(columns=df_result.columns)
 
                     # Cria uma string com a frase 'DETALHAMENTO DO PONTO DIGITAL'
                     # concatenada com as variáveis 'employee_name', 'cpf', 'month_name' e 'year'
@@ -88,15 +111,15 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                         f'{month_name}/{year}')
 
                     # Cria uma linha com os dados do cabeçalho abaixo da frase
-                    header_row = pd.DataFrame([df_month.columns], columns=df_month.columns)
+                    header_row = pd.DataFrame([df_result.columns], columns=df_result.columns)
 
                     # Concatena os valores já existentes no Dataframe, para que o mesmo
                     # contenha as novas linhas criadas
                     data_by_year[year] = pd.concat(
-                        [data_by_year[year], header_row, df_month], ignore_index=True)
+                        [data_by_year[year], header_row, df_result], ignore_index=True)
                 else:
                     # Cria uma linha vazia no início de cada mês
-                    empty_row = pd.DataFrame([[''] * len(df_month.columns)], columns=df_month.columns)
+                    empty_row = pd.DataFrame([[''] * len(df_result.columns)], columns=df_result.columns)
 
                     # Cria uma string com a frase DETALHAMENTO DO PONTO DIGITAL concatenada
                     # com as variáveis 'employee_name', 'cpf', 'month_name' e 'year'
@@ -106,12 +129,12 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
                     # Cria uma linha para exibir a string 'employee_row'
                     data_employee_row = pd.DataFrame([
-                        [employee_row] + [''] * (df_month.shape[1] - 1)], columns=df_month.columns)
+                        [employee_row] + [''] * (df_result.shape[1] - 1)], columns=df_result.columns)
 
                     # Concatena os valores já existentes no Dataframe, para que o mesmo
                     # contenha as novas linhas criadas
                     data_by_year[year] = pd.concat(
-                        [data_by_year[year], empty_row, data_employee_row, header_row, df_month], ignore_index=True)
+                        [data_by_year[year], empty_row, data_employee_row, header_row, df_result], ignore_index=True)
 
             # Se ocorrer erro durante o processo de coleta e montagem de dados no DataFrame,
             # exibe mensagem de erro, espera 2 segundos e fecha a mensagem
@@ -127,6 +150,8 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
         for year, df in data_by_year.items():
             print(f"Ano: {year}, Número de Linhas: {len(df)}")
 
+            # print(f'DATA FRAME FORA LOOP {df}')
+
         # Itera sobre as chaves (anos) e valores (DataFrames) do dicionário,
         # cria o arquivo excel com os dados agrupados por ano em cada aba e salva na pasta BOT
         with pd.ExcelWriter(fr'{file_path}\{employee_name} - CPF_{cpf}.xlsx', engine='xlsxwriter') as writer:
@@ -140,7 +165,6 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
                 # Obtém o índice da linha que contém a string 'DATA ENTRADA'
                 row_index = df_year.index[df_year.iloc[:,0] == 'DATA ENTRADA'].tolist()[0]
-
 
                 # Itera sobre as linhas do DataFrame para encontrar as linhas
                 # com a string 'DATA ENTRADA' e aplica a formatação
