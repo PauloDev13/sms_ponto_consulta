@@ -58,10 +58,15 @@ def validate_dates(date_start, date_end):
 def validate_cpf(cpf):
     try:
         # Remove caracteres não numéricos
-        cpf = ''.join(filter(str.isdigit, cpf))
+        # cpf_2 = ''.join(filter(str.isdigit, cpf))
+        # st.write(cpf)
 
         if not cpf:
-            default_msg('O campo CPF é obrigatório!', 'info')
+            default_msg('O CPF é obrigatório!', 'info')
+            return False
+
+        if not cpf.isdigit():
+            default_msg('O CPF deve conter somente números!', 'info')
             return False
 
         if len(cpf) != 11:
@@ -110,8 +115,8 @@ def form_callback():
 
     # Se o CPF for válido e tiver 11 números, formata aplicando uma máscara
     if cpf_valid:
-        if len(cpf_input) == 11:
-            cpf_input = format_cpf(cpf_input)
+        cpf_input = format_cpf(cpf_input)
+        # if len(cpf_input) == 11:
 
         # Valida as datas
         dates_valid = validate_dates(date_start, date_end)

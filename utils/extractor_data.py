@@ -13,6 +13,8 @@ import calendar
 from io import StringIO
 from dotenv import load_dotenv
 
+import numpy as np
+
 from utils import utils
 
 
@@ -107,11 +109,12 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                     # concatenada com as variáveis 'employee_name', 'cpf', 'month_name' e 'year'
                     # que vai ser impressa no topo do arquivo Excel
                     data_by_year[year].loc[0, data_by_year[year].columns[0]] = (
-                        f'DETALHAMENTO DO PONTO DIGITAL - {employee_name} - CPF: {cpf} - '
+                        f'PONTO DIGITAL - {employee_name} - CPF: {cpf} - '
                         f'{month_name}/{year}')
 
                     # Cria uma linha com os dados do cabeçalho abaixo da frase
                     header_row = pd.DataFrame([df_result.columns], columns=df_result.columns)
+
 
                     # Concatena os valores já existentes no Dataframe, para que o mesmo
                     # contenha as novas linhas criadas
@@ -124,7 +127,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                     # Cria uma string com a frase DETALHAMENTO DO PONTO DIGITAL concatenada
                     # com as variáveis 'employee_name', 'cpf', 'month_name' e 'year'
                     # que vai ser impressa no início de cada mês
-                    employee_row = (f'DETALHAMENTO DO PONTO DIGITAL - {employee_name} - CPF: {cpf} - '
+                    employee_row = (f'PONTO DIGITAL - {employee_name} - CPF: {cpf} - '
                                     f'{month_name}/{year}')
 
                     # Cria uma linha para exibir a string 'employee_row'
@@ -150,8 +153,6 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
         for year, df in data_by_year.items():
             print(f"Ano: {year}, Número de Linhas: {len(df)}")
 
-            # print(f'DATA FRAME FORA LOOP {df}')
-
         # Itera sobre as chaves (anos) e valores (DataFrames) do dicionário,
         # cria o arquivo excel com os dados agrupados por ano em cada aba e salva na pasta BOT
         with pd.ExcelWriter(fr'{file_path}\{employee_name} - CPF_{cpf}.xlsx', engine='xlsxwriter') as writer:
@@ -160,17 +161,113 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 workbook = writer.book
                 worksheet = writer.sheets[str(year)]
 
-                # Define a formatação que será aplicada nas linhas
-                star_row_format = workbook.add_format({'bold': True, 'bg_color': '#FFFF00'})
+                # Definindo as formatações que serão aplicadas nas linhas e colunas
+                header_format = workbook.add_format({
+                    'bold': True,
+                    'bg_color': '#B0C4DE',
+                    'align': 'center',
+                    'border': 1,
+                    'border_color': 'black'
+                })
 
-                # Obtém o índice da linha que contém a string 'DATA ENTRADA'
-                row_index = df_year.index[df_year.iloc[:,0] == 'DATA ENTRADA'].tolist()[0]
+                row_format = workbook.add_format({
+                        'top': 1,  # Borda superior fina
+                        'bottom': 1,  # Borda inferior fina
+                        'right': 1,  # Borda esquerda fina
+                        'border_color': 'black',
+                        'bold': True,
+                        'bg_color': '#F0E68C',
+                        'align': 'center'
+                })
+
+                col_format = workbook.add_format({'align': 'center'})
+
+                # Formata bordas em todas as linhas e colunas
+                border_format = workbook.add_format({
+                    'border': 1,
+                    'border_color': 'black',
+                    'align': 'center'
+                })
+
+                green_bold_format = workbook.add_format({
+                    'bold': True,
+                    'font_color': 'green',
+                    'align': 'center',
+                    'border': 1,
+                    'border_color': 'black'
+                })
+
+                blue_bold_format = workbook.add_format({
+                    'bold': True,
+                    'font_color': 'blue',
+                    'align': 'center',
+                    'border': 1,
+                    'border_color': 'black'
+                })
+
+                # Definindo um formato com bordas específicas
+                format_borders = workbook.add_format({
+                    'top': 1,  # Borda superior fina
+                    'bottom': 1,  # Borda inferior fina
+                    'left': 1,  # Borda esquerda fina
+                    'border_color': 'black',
+                    'bold': True,
+                    'bg_color': '#F0E68C',
+                    'align': 'center'
+                })
+
+                # Definindo larguras das colunas
+                worksheet.set_column(0, 0, 25)
+                worksheet.set_column(1, 1, 20)
+                worksheet.set_column(2, 2, 25)
+                worksheet.set_column(3, 6, 20)
 
                 # Itera sobre as linhas do DataFrame para encontrar as linhas
                 # com a string 'DATA ENTRADA' e aplica a formatação
                 for row_index, row in df_year.iterrows():
-                    if 'DATA ENTRADA' in row.values:
-                        worksheet.set_row(row_index - 1, cell_format=star_row_format)
+                    for col_index, value in enumerate(row):
+
+                        # Formata com a cor verde as horas trabalhadas >= a 12:00:00
+                        if col_index == 4 and isinstance(value, str) and value >= '12:00:00':
+                            worksheet.write(row_index, col_index, value, green_bold_format)
+
+                        # Formata com a cor azul as horas trabalhadas < a 12:00:00
+                        elif col_index == 4 and isinstance(value, str) and value < '12:00:00':
+                            worksheet.write(row_index, col_index, value, blue_bold_format)
+
+                        elif col_index == 6 and isinstance(value, str) and value == 'APROVADO':
+                            worksheet.write(row_index, col_index, value, green_bold_format)
+
+                        # Aplica borda em todas as linhas com índice != 0
+                        elif row_index != 0:
+                            worksheet.write(row_index, col_index, value, border_format)
+
+                    # Mescla as celulas da linha com índice 0 das colunas 0 até a 6
+                    if row_index == 0:
+                        worksheet.merge_range(
+                            0, 0, 0, 6, row.iloc[0], header_format
+                        )
+
+                    # Se a coluna 0 contiver as strings 'JUSTIFICATIVA' ou 'AVISO',
+                    # copia o conteúdo da linha e mescla as células das colunas 1 até 6
+                    if (row.iloc[0] == 'JUSTIFICATIVA') or (row.iloc[0] == 'AVISO'):
+                        worksheet.write(row_index, 0, row.iloc[0], format_borders)
+
+                        worksheet.merge_range(
+                            row_index, 1, row_index, 6, row.iloc[1], row_format
+                        )
+
+                    # Se a coluna contém o nome do servidor, mescla a linha das colunas 0 a 6
+                    if (row.iloc[0] == employee_row):
+                        worksheet.merge_range(
+                            row_index, 0, row_index, 6, row.iloc[0], header_format
+                        )
+
+                    # Se o índice da coluna for < 7 e contiver a string 'DATA ENTRADA',
+                    # copia o conteúdo das celulas linha em todas as colunas
+                    for col in range(len(row)):
+                        if col < 7 and 'DATA ENTRADA' in row.values:
+                            worksheet.write(row_index, col, row.iloc[col], header_format)
 
         # Retorna verdadeiro se toda operação foi realizada com sucesso
         return True
