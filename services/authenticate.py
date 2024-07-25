@@ -73,10 +73,10 @@ def login():
         # Se a página inicial carregou, exibe mensagem de sucesso
         # Se não, exibe mensagem de alerta
         if load_page:
-            utils.default_msg('Página inicial carregada com sucesso!', 'success')
+            utils.default_msg('Login realizado com sucesso!', 'success')
 
         else:
-            utils.default_msg('Falha ao carregar página inicial! Tente novamente.', 'info')
+            utils.default_msg('Falha no login! Tente novamente.', 'info')
 
         # Retorna uma instância do navegador.
         return driver
