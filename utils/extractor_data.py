@@ -127,7 +127,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                     # Cria uma string com a frase DETALHAMENTO DO PONTO DIGITAL concatenada
                     # com as variáveis 'employee_name', 'cpf', 'month_name' e 'year'
                     # que vai ser impressa no início de cada mês
-                    employee_row = (f'PONTO DIGITAL - {employee_name} - CPF: {cpf} - '
+                    employee_row: str = (f'PONTO DIGITAL - {employee_name} - CPF: {cpf} - '
                                     f'{month_name}/{year}')
 
                     # Cria uma linha para exibir a string 'employee_row'
@@ -226,15 +226,23 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 # com a string 'DATA ENTRADA' e aplica a formatação
                 for row_index, row in df_year.iterrows():
                     for col_index, value in enumerate(row):
+                        # Formata os cabeçalhos do início da planilha e entre os meses,
+                        # aplicando borda e mesclando as células
+                        if col_index == 0 and value.startswith('PONTO DIGITAL'):
+                            worksheet.write(row_index, 0, row.iloc[0], format_borders)
+                            worksheet.merge_range(
+                                row_index, 0, row_index, 6, value, header_format
+                            )
 
-                        # Formata com a cor verde as horas trabalhadas >= a 12:00:00
-                        if col_index == 4 and isinstance(value, str) and value >= '12:00:00':
+                        # Formata com a cor as células onde verde as horas trabalhadas >= a 12:00:00
+                        elif col_index == 4 and isinstance(value, str) and value >= '12:00:00':
                             worksheet.write(row_index, col_index, value, green_bold_format)
 
-                        # Formata com a cor azul as horas trabalhadas < a 12:00:00
+                        # Formata com a cor azul as células onde as horas trabalhadas < a 12:00:00
                         elif col_index == 4 and isinstance(value, str) and value < '12:00:00':
                             worksheet.write(row_index, col_index, value, blue_bold_format)
 
+                        # Formata com a cor verde as células com a string 'APROVADO'
                         elif col_index == 6 and isinstance(value, str) and value == 'APROVADO':
                             worksheet.write(row_index, col_index, value, green_bold_format)
 
@@ -242,26 +250,26 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                         elif row_index != 0:
                             worksheet.write(row_index, col_index, value, border_format)
 
-                    # Mescla as celulas da linha com índice 0 das colunas 0 até a 6
-                    if row_index == 0:
-                        worksheet.merge_range(
-                            0, 0, 0, 6, row.iloc[0], header_format
-                        )
-
                     # Se a coluna 0 contiver as strings 'JUSTIFICATIVA' ou 'AVISO',
                     # copia o conteúdo da linha e mescla as células das colunas 1 até 6
                     if (row.iloc[0] == 'JUSTIFICATIVA') or (row.iloc[0] == 'AVISO'):
                         worksheet.write(row_index, 0, row.iloc[0], format_borders)
-
                         worksheet.merge_range(
                             row_index, 1, row_index, 6, row.iloc[1], row_format
                         )
-
-                    # Se a coluna contém o nome do servidor, mescla a linha das colunas 0 a 6
-                    if (row.iloc[0] == employee_row):
-                        worksheet.merge_range(
-                            row_index, 0, row_index, 6, row.iloc[0], header_format
-                        )
+                        if len(row.iloc[1]) > 150:
+                            # print(f'MAIOR QUE 100: {row.iloc[1][:100]}')
+                            worksheet.write(
+                                row_index, 1,
+                                row.iloc[1],
+                                workbook.add_format({
+                                    'text_wrap': True,
+                                    'bg_color': '#F0E68C',
+                                    'align': 'center',
+                                    'valign': 'center',
+                                    })
+                            )
+                            worksheet.set_row(row_index, 50)
 
                     # Se o índice da coluna for < 7 e contiver a string 'DATA ENTRADA',
                     # copia o conteúdo das celulas linha em todas as colunas
