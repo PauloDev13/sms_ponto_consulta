@@ -185,24 +185,32 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 # Formata bordas em todas as linhas e colunas
                 border_format = workbook.add_format({
                     'border': 1,
-                    'border_color': 'black',
-                    'align': 'center'
+                    # 'border_color': 'black',
+                    # 'align': 'center'
                 })
 
                 green_bold_format = workbook.add_format({
                     'bold': True,
-                    'font_color': 'green',
+                    'bg_color': 'green',
+                    'font_color': 'white',
                     'align': 'center',
-                    'border': 1,
-                    'border_color': 'black'
+                    'border': 1
                 })
 
                 blue_bold_format = workbook.add_format({
                     'bold': True,
-                    'font_color': 'blue',
+                    'bg_color': 'blue',
+                    'font_color': 'white',
                     'align': 'center',
-                    'border': 1,
-                    'border_color': 'black'
+                    'border': 1
+                })
+
+                red_bold_format = workbook.add_format({
+                    'bold': True,
+                    'bg_color': 'red',
+                    'font_color': 'white',
+                    'align': 'center',
+                    'border': 1
                 })
 
                 # Definindo um formato com bordas específicas
@@ -225,6 +233,67 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 # Itera sobre as linhas do DataFrame para encontrar as linhas
                 # com a string 'DATA ENTRADA' e aplica a formatação
                 for row_index, row in df_year.iterrows():
+
+                    if row.iloc[0] != 'DATA ENTRADA':
+                        cell_trab = f'E{row_index + 1}'
+
+                        worksheet.conditional_format(cell_trab, {
+                            'type': 'formula',
+                            'criteria': f'=${cell_trab}>="12:00:00"',
+                            'format': green_bold_format
+                        })
+
+                        worksheet.conditional_format(cell_trab, {
+                            'type': 'formula',
+                            'criteria':
+                                f'=NOT(OR(${cell_trab}>="12:00:00", ${cell_trab}="---", ${cell_trab}=""))',
+                            'format': blue_bold_format
+                        })
+
+                        cell_status = f'G{row_index + 1}'
+
+                        worksheet.conditional_format(cell_status, {
+                            'type': 'formula',
+                            'criteria': f'=${cell_status}="APROVADO"',
+                            'format': green_bold_format
+                        })
+
+                        worksheet.conditional_format(cell_status, {
+                            'type': 'formula',
+                            'criteria':
+                                f'=NOT(OR(${cell_status}!="APROVADO", ${cell_status}="---", ${cell_status}=""))',
+                            'format': red_bold_format
+                        })
+
+                    # Se a coluna 0 contiver as strings 'JUSTIFICATIVA' ou 'AVISO',
+                    # copia o conteúdo da linha e mescla as células das colunas 1 até 6
+                    if (row.iloc[0] == 'JUSTIFICATIVA') or (row.iloc[0] == 'AVISO'):
+                        worksheet.write(row_index, 0, row.iloc[0], workbook.add_format({
+                            'top': 1,  # Borda superior fina
+                            'bottom': 1,  # Borda inferior fina
+                            'left': 1,  # Borda esquerda fina
+                            'bold': True,
+                            'bg_color': '#F0E68C',
+                            'align': 'center',
+                            'valign': 'top',
+                        }))
+
+                        if len(row.iloc[1]) > 150:
+                            worksheet.set_row(row_index, 50)
+
+                        worksheet.merge_range(
+                            row_index, 1, row_index, 6, row.iloc[1], workbook.add_format({
+                                'top': 1,  # Borda superior fina
+                                'bottom': 1,  # Borda inferior fina
+                                'right': 1,  # Borda esquerda fina
+                                'text_wrap': True,
+                                'bold': True,
+                                'bg_color': '#F0E68C',
+                                'align': 'justify',
+                                'valign': 'top',
+                            }))
+
+
                     for col_index, value in enumerate(row):
                         # Formata os cabeçalhos do início da planilha e entre os meses,
                         # aplicando borda e mesclando as células
@@ -234,42 +303,9 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                                 row_index, 0, row_index, 6, value, header_format
                             )
 
-                        # Formata com a cor as células onde verde as horas trabalhadas >= a 12:00:00
-                        elif col_index == 4 and isinstance(value, str) and value >= '12:00:00':
-                            worksheet.write(row_index, col_index, value, green_bold_format)
-
-                        # Formata com a cor azul as células onde as horas trabalhadas < a 12:00:00
-                        elif col_index == 4 and isinstance(value, str) and value < '12:00:00':
-                            worksheet.write(row_index, col_index, value, blue_bold_format)
-
-                        # Formata com a cor verde as células com a string 'APROVADO'
-                        elif col_index == 6 and isinstance(value, str) and value == 'APROVADO':
-                            worksheet.write(row_index, col_index, value, green_bold_format)
-
                         # Aplica borda em todas as linhas com índice != 0
-                        elif row_index != 0:
-                            worksheet.write(row_index, col_index, value, border_format)
-
-                    # Se a coluna 0 contiver as strings 'JUSTIFICATIVA' ou 'AVISO',
-                    # copia o conteúdo da linha e mescla as células das colunas 1 até 6
-                    if (row.iloc[0] == 'JUSTIFICATIVA') or (row.iloc[0] == 'AVISO'):
-                        worksheet.write(row_index, 0, row.iloc[0], format_borders)
-                        worksheet.merge_range(
-                            row_index, 1, row_index, 6, row.iloc[1], row_format
-                        )
-                        if len(row.iloc[1]) > 150:
-                            # print(f'MAIOR QUE 100: {row.iloc[1][:100]}')
-                            worksheet.write(
-                                row_index, 1,
-                                row.iloc[1],
-                                workbook.add_format({
-                                    'text_wrap': True,
-                                    'bg_color': '#F0E68C',
-                                    'align': 'center',
-                                    'valign': 'center',
-                                    })
-                            )
-                            worksheet.set_row(row_index, 50)
+                        # elif row_index != 0:
+                        #     worksheet.write(row_index, col_index, value)
 
                     # Se o índice da coluna for < 7 e contiver a string 'DATA ENTRADA',
                     # copia o conteúdo das celulas linha em todas as colunas
