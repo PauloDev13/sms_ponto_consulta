@@ -4,6 +4,7 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.common.exceptions import TimeoutException
 
 import pandas as pd
+
 from bs4 import BeautifulSoup
 
 import os
@@ -135,7 +136,10 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                     # Concatena os valores já existentes no Dataframe, para que o mesmo
                     # contenha as novas linhas criadas
                     data_by_year[year] = pd.concat(
-                        [data_by_year[year], empty_row, data_employee_row, header_row, df_result], ignore_index=True)
+                        [data_by_year[year],
+                         empty_row, data_employee_row, header_row, df_result],
+                        ignore_index=True
+                    )
 
             # Se ocorrer erro durante o processo de coleta e montagem de dados no DataFrame,
             # exibe mensagem de erro, espera 2 segundos e fecha a mensagem
@@ -145,12 +149,12 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
             current_date += datetime.timedelta(days=32)
             current_date = current_date.replace(day=1)
-        # FIM DO LAÇO WHILE
+        ########## FIM DO LAÇO WHILE ###########
 
             # Depuração: Imprime o conteúdo do dicionário data_by_year
             for year, df in data_by_year.items():
-                # print(f"Ano: {year}, Número de Linhas: {len(df)}")
-                print(f"Processando agora o ano: {year}")
+                print(f'Ano: {year}\nLinhas por ano: {len(df)}')
+
 
         # Chama a função que cria, formata e salva o arquivo Excel
         excel.generate_excel_file(data_by_year, employee_name, cpf)

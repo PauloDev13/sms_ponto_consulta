@@ -123,7 +123,6 @@ def form_callback():
     # Se o CPF for válido e tiver 11 números, formata aplicando uma máscara
     if cpf_valid:
         cpf_input = format_cpf(cpf_input)
-        # if len(cpf_input) == 11:
 
         # Valida as datas
         dates_valid = validate_dates(date_start, date_end)
@@ -146,27 +145,23 @@ def form_callback():
 
                 # Exibe um spinner até que a funçao 'data_fetch'
                 # do módulo 'extrator_data' conclua a execução
-                with st.spinner('Gerando arquivo...'):
+                with st.spinner(f'Processamento em andamento, AGUARDE...'):
                     result = extractor_data.data_fetch(
                         cpf_input, month_start, year_start, month_end, year_end, st.session_state.driver
                     )
 
-                # Se a função retornar TRUE, o arquivo foi gerado com sucesso,
-                # limpa os campos do formulário e exibe mensagem de sucesso
-                if result:
-                    default_msg('Arquivo criado com sucesso!', 'success')
+                # Se não houver erros no processamento, exibe mensagem de sucesso
+                default_msg('Arquivo criado com sucesso!', 'success')
 
         else:
             # Se já existir uma sessão aberta no Stremlit, repete o processo de geração do arquivo
-            with st.spinner('Gerando arquivo...'):
-                result = extractor_data.data_fetch(
+            with st.spinner('Processamento em andamento, AGUARDE...') as spinner:
+                extractor_data.data_fetch(
                     cpf_input, month_start, year_start, month_end, year_end, st.session_state.driver
                 )
 
-            # Se a função retornar TRUE, o arquivo foi gerado com sucesso,
-            # limpa os campos do formulário e exibe mensagem de sucesso
-            if result:
-                default_msg('Arquivo criado com sucesso!', 'success')
+            # Se não houver erros no processamento, exibe mensagem de sucesso
+            default_msg('Arquivo criado com sucesso!', 'success')
 
 
 # def generate_excel_file(dataframe: any, employee_name: str, cpf: str):

@@ -87,7 +87,9 @@ def generate_excel_file(dataframe: any, employee_name: str, cpf: str):
                     worksheet.write(row_index, 0, row.iloc[0], custom_format_1)
                     # Se o tamanho do conteúdo da célula na coluna 1 for > do que 150 caracteres,
                     # aumenta a altura da linha para 50
-                    if len(row.iloc[1]) > 145:
+                    if len(row.iloc[1]) >= 145 and len(row.iloc[1]) <= 380:
+                        worksheet.set_row(row_index, 35)
+                    elif len(row.iloc[1]) >= 381:
                         worksheet.set_row(row_index, 50)
                     # Mescla as colunas a partir da coluna 1 até a última coluna
                     # matendo o conteúdo da célula da coluna 1 nas células mescladas
