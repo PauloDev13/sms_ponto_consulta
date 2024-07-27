@@ -99,10 +99,32 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                     | (df_table['DATA ENTRADA'] == 'JUSTIFICATIVA')
                 ]
 
+                ###########################################################################
+                columns_to_check = [
+                    'DATA ENTRADA', 'ENTRADA', 'DATA SAÍDA', 'SAÍDA',
+                    'TRABALHADA', 'HORA JUSTIFICADA', 'STATUS']
+
+                # Verifica onde todas as colunas estão vazias
+                all_empty = df_result[columns_to_check].isna().all(axis=1) | (df_result[columns_to_check] == '').all(axis=1)
+                print(f'ENTROU AQUI {all_empty}')
+
+                # Cria uma nova linha com a mensagem "SEM DADOS PARA ESTE MÊS"
+                message_row = ['SEM DADOS PARA ESTE MÊS. Veifique se o servidor está de FÉRIAS OU DE LICENÇA'] * len(df_result.columns)
+
+                if all_empty.empty:
+                    # Adiciona a linha de mensagem
+                    df_with_message = pd.concat([pd.DataFrame([message_row], columns=df_result.columns), df_result],
+                                                ignore_index=True)
+
+                else:
+                    df_with_message = df_result
+
+                ###########################################################################
+
                 # Se o ano não existir no dicionário 'data_by_year', adiciona-o
                 if year not in data_by_year:
                     # Cria um DataFrame vazio somente com a linha do cabeçalho
-                    data_by_year[year] = pd.DataFrame(columns=df_result.columns)
+                    data_by_year[year] = pd.DataFrame(columns=df_with_message.columns)
 
                     # Cria uma string com a frase 'DETALHAMENTO DO PONTO DIGITAL'
                     # concatenada com as variáveis 'employee_name', 'cpf', 'month_name' e 'year'
@@ -112,16 +134,16 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                         f'{month_name}/{year}')
 
                     # Cria uma linha com os dados do cabeçalho abaixo da frase
-                    header_row = pd.DataFrame([df_result.columns], columns=df_result.columns)
+                    header_row = pd.DataFrame([df_with_message.columns], columns=df_with_message.columns)
 
 
                     # Concatena os valores já existentes no Dataframe, para que o mesmo
                     # contenha as novas linhas criadas
                     data_by_year[year] = pd.concat(
-                        [data_by_year[year], header_row, df_result], ignore_index=True)
+                        [data_by_year[year], header_row, df_with_message], ignore_index=True)
                 else:
                     # Cria uma linha vazia no início de cada mês
-                    empty_row = pd.DataFrame([[''] * len(df_result.columns)], columns=df_result.columns)
+                    empty_row = pd.DataFrame([[''] * len(df_with_message.columns)], columns=df_with_message.columns)
 
                     # Cria uma string com a frase DETALHAMENTO DO PONTO DIGITAL concatenada
                     # com as variáveis 'employee_name', 'cpf', 'month_name' e 'year'
@@ -131,13 +153,13 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
                     # Cria uma linha para exibir a string 'employee_row'
                     data_employee_row = pd.DataFrame([
-                        [employee_row] + [''] * (df_result.shape[1] - 1)], columns=df_result.columns)
+                        [employee_row] + [''] * (df_with_message.shape[1] - 1)], columns=df_with_message.columns)
 
                     # Concatena os valores já existentes no Dataframe, para que o mesmo
                     # contenha as novas linhas criadas
                     data_by_year[year] = pd.concat(
                         [data_by_year[year],
-                         empty_row, data_employee_row, header_row, df_result],
+                         empty_row, data_employee_row, header_row, df_with_message],
                         ignore_index=True
                     )
 

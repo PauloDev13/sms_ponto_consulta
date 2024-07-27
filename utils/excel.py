@@ -79,6 +79,7 @@ def generate_excel_file(dataframe: any, employee_name: str, cpf: str):
 
             # Itera sobre o DataFrame
             for row_index, row in df_year.iterrows():
+
                 # Se a coluna 0 contiver as strings 'JUSTIFICATIVA' ou 'AVISO',
                 # copia o conteúdo da linha e mescla as células das colunas 1 até 6
                 # Se encontrar na coluna 0 (primeira coluna) as strings 'JUSTIFICATIVA' ou 'AVISO',
