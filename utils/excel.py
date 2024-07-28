@@ -108,6 +108,18 @@ def generate_excel_file(dataframe: any, employee_name: str, cpf: str):
                             row_index, 0, row_index, 6, value, header_format
                         )
 
+                    if col_index == 0 and value.startswith('NÃO HÁ REGISTRO'):
+                        worksheet.write(row_index, 0, row.iloc[0])
+                        worksheet.set_row(row_index, 30)
+                        worksheet.merge_range(
+                            row_index, 0, row_index, 6, value, workbook.add_format({
+                                'bg_color': '#FF8C00',
+                                'align': 'center',
+                                'valign': 'center',
+                                'font_size': 20,
+                            })
+                        )
+
                     # Formata com a cor verde as células da coluna horas trabalhadas
                     # que contenham o valor >= a '12:00:00'
                     if col_index == 4 and isinstance(value, str) and value >= '12:00:00':

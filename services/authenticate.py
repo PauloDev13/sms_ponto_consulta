@@ -106,5 +106,4 @@ def logout():
     if 'driver' in st.session_state:
         st.session_state.driver.quit()
         del st.session_state.driver
-
         utils.default_msg('Aplicação encerrada!', 'info')
