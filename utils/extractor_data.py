@@ -77,12 +77,13 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 df_table = pd.read_html(StringIO(str(soup_table)))[0]
 
                 # Cria um dicionário com as colunas que serão criadas.
-                # O conteúdo é de todas é vazio e terão o mesmo número
+                # O conteúdo de todas é vazio e terão o mesmo número
                 # de linhas do Dataframe
                 new_columns = {
                     'HT': [''] * df_table.shape[0],
                     'HJ': [''] * df_table.shape[0],
-                    'ST': [''] * df_table.shape[0]
+                    'ST': [''] * df_table.shape[0],
+                    'ADN': [''] * df_table.shape[0],
                 }
 
                 # Loop para criar as colunas no Dataframe
@@ -92,7 +93,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 # Após criadas, as colunas vão receber os valore 1 ou vazio ('').
                 # É aplicado no Dataframe (df_table) a função (columns_update) que
                 # retorna esses valores
-                df_table[['HT', 'HJ', 'ST']] = df_table.apply(utils.columns_update, axis=1)
+                df_table[['HT', 'HJ', 'ST', 'ADN']] = df_table.apply(utils.columns_update, axis=1)
 
                 # Remove do dataframe (df_table) a coluna (EDITAR)
                 del df_table['EDITAR']
@@ -124,7 +125,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 # Array de string com as colunas do Datafre (df_table) que serão verificadas
                 columns_to_check = [
                     'DATA ENTRADA', 'ENTRADA', 'DATA SAÍDA', 'SAÍDA',
-                    'TRABALHADA', 'HORA JUSTIFICADA', 'STATUS', 'HT', 'HJ', 'ST']
+                    'TRABALHADA', 'HORA JUSTIFICADA', 'STATUS', 'HT', 'HJ', 'ST', 'ADN']
 
 
                 # Verifica onde todas as colunas do dataframe estão vazias
@@ -209,7 +210,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
             # Depuração: Imprime o conteúdo do dicionário data_by_year
             for year, df in data_by_year.items():
-                print(f'Mês/Ano: {month_name}/{year}\nLinhas por ano: {len(df)}')
+                print(f'Mês/Ano: {month}/{year}\nLinhas por ano: {len(df)}')
 
         # Chama a função que cria, formata e salva o arquivo Excel
         excel.generate_excel_file(data_by_year, employee_name, cpf)

@@ -1,5 +1,7 @@
 import pandas as pd
 
+import streamlit as st
+
 import os
 from dotenv import load_dotenv
 
@@ -70,7 +72,8 @@ def generate_excel_file(dataframe: any, employee_name: str, cpf: str):
             worksheet.set_column(1, 1, 20, workbook.add_format({'align': 'center'}))
             worksheet.set_column(2, 2, 25)
             worksheet.set_column(3, 6, 20, workbook.add_format({'align': 'center'}))
-            worksheet.set_column(7, 9, 10, workbook.add_format({'align': 'center'}))
+            worksheet.set_column(7, 10, 5, workbook.add_format({'align': 'center'}))
+
 
             # Aplica bordas em toda as linhas e colunas que contenham dados
             worksheet.conditional_format(f'A1:J{len(df_year)}', {
@@ -79,11 +82,11 @@ def generate_excel_file(dataframe: any, employee_name: str, cpf: str):
             })
 
             # worksheet.write(row_index + 1, 7, sum_formula)
+                # sum_formula = f'=SUM(H{len(df_year)}:H{row_index})'
+                # print(f'FORMULA: {sum_formula}')
 
             # Itera sobre o DataFrame
             for row_index, row in df_year.iterrows():
-                # sum_formula = f'=SUM(H{len(df_year)}:H{row_index})'
-                # print(f'FORMULA: {sum_formula}')
 
                 if row.iloc[0] == 'TOTAIS':
                     worksheet.merge_range(
@@ -98,7 +101,7 @@ def generate_excel_file(dataframe: any, employee_name: str, cpf: str):
                     worksheet.write(row_index, 0, row.iloc[0], custom_format_1)
                     # Se o tamanho do conteúdo da célula na coluna 1 for > do que 150 caracteres,
                     # aumenta a altura da linha para 50
-                    if len(row.iloc[1]) >= 145 and len(row.iloc[1]) <= 380:
+                    if 145 <= len(row.iloc[1]) <= 380:
                         worksheet.set_row(row_index, 35)
                     elif len(row.iloc[1]) >= 381:
                         worksheet.set_row(row_index, 50)
@@ -110,19 +113,22 @@ def generate_excel_file(dataframe: any, employee_name: str, cpf: str):
                 # Itera sobre as colunas e linhas
                 for col_index, value in enumerate(row):
                     # Se a coluna for a primeira (índice 0) e o conteúdo da célula da primeira
-                    # linha começar com a string 'PONTO DIGITAL', Formata os cabeçalhos
+                    # linha começar com a string 'PONTO DIGITAL', formata os cabeçalhos
                     # do início da planilha e entre os meses, aplicando borda e mesclando as células
                     if col_index == 0 and value.startswith('PONTO DIGITAL'):
                         worksheet.write(row_index, 0, row.iloc[0])
                         worksheet.merge_range(
-                            row_index, 0, row_index, 9, value, header_format
+                            row_index, 0, row_index, 10, value, header_format
                         )
 
+                    # Se for a primeira coluna e o conteúdo da primeira célula da primeira
+                    # linha começar com a string 'NÃO HÁ REGISTRO', formata a linha e mescla
+                    # o intervalo de células com índices de 0 a 10
                     if col_index == 0 and value.startswith('NÃO HÁ REGISTRO'):
                         worksheet.write(row_index, 0, row.iloc[0])
                         worksheet.set_row(row_index, 30)
                         worksheet.merge_range(
-                            row_index, 0, row_index, 9, value, workbook.add_format({
+                            row_index, 0, row_index, 10, value, workbook.add_format({
                                 'bg_color': '#FF8C00',
                                 'align': 'center',
                                 'valign': 'center',
@@ -147,11 +153,13 @@ def generate_excel_file(dataframe: any, employee_name: str, cpf: str):
                     elif col_index == 6 and isinstance(value, str) and value == 'APROVADO':
                         worksheet.write(row_index, col_index, value, green_bold_format)
 
-                    elif (col_index > 6 and col_index < 10):
+                    # Se o índice das colunas for maior que 6 e menor 11, aplica
+                    # formatação com bordas. Coloca bordas nas últimas 4 colunas
+                    elif 6 < col_index < 11:
                         worksheet.write(row_index, col_index, value, workbook.add_format({'border': 1}))
 
-                # Se o índice da coluna for < 7 e nela contiver a string 'DATA ENTRADA',
+                # Se o índice da coluna for < 11 e nela contiver a string 'DATA ENTRADA',
                 # aplica formatação em toda a linha do cabeçalho das colunas
                 for col in range(len(row)):
-                    if col < 10 and 'DATA ENTRADA' in row.values:
+                    if col < 11 and 'DATA ENTRADA' in row.values:
                         worksheet.write(row_index, col, row.iloc[col], header_format)
