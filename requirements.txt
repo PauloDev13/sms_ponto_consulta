@@ -1,0 +1,10 @@
+pandas
+selenium
+lxml
+openpyxl
+xlsxwriter
+html5lib
+python-dotenv
+beautifulsoup4
+streamlit
+bs4
