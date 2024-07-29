@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 
 import os
+from datetime import datetime, time
 from time import sleep
 from dotenv import load_dotenv
 
@@ -11,6 +12,63 @@ from utils import extractor_data
 
 load_dotenv()
 file_path = os.getenv('PATH_FILE_BASE')
+
+
+# Função para verificar se a string está no formato correto ('00:00:00')
+def format_validation(hour_str) -> bool:
+    try:
+        datetime.strptime(hour_str, '%H:%M:%S')
+        return True
+    except ValueError:
+        return False
+
+
+# Função para converter string para datetime.time
+def str_to_time(hour_str):
+    try:
+        return datetime.strptime(hour_str, '%H:%M:%S').time()
+    except ValueError:
+        return None
+
+
+# Atualiza as colunas 'HT', 'HJ', 'ST' se nas colunas 'TRABALHADA' e
+# 'HORA JUSTIFICADA' os valores forem iguais ou maiores que '12:00:00'.
+# Na coluna 'STATUS' se o valor for igual a 'APROVADO'
+def columns_update(row):
+    try:
+        # Se os dados da coluna trabalha estiver no formado '00:00:00',
+        # faz a conversão para datetime.time. Se não, retorna None
+        if format_validation(row['TRABALHADA']):
+            hour_worked = str_to_time(row['TRABALHADA'])
+        else:
+            hour_worked = None
+
+        # Se 'hour_worked' não for None e for maior ou igual a '12:00:00',
+        # retorna 1, se não, retorna uma string vazia ('')
+        ht_value = 1 if hour_worked and hour_worked >= str_to_time('12:00:00') else ''
+
+        if format_validation(row['HORA JUSTIFICADA']):
+            hour_justified = str_to_time(row['HORA JUSTIFICADA'])
+        else:
+            hour_justified = None
+
+        hj_value = 1 if hour_justified and hour_justified >= str_to_time('12:00:00') else ''
+
+        # Se os dados na coluna 'STATUS' for igual a string 'APROVADO',
+        # retorna 1, se não, retorna uma string vazia ('')
+        st_value = 1 if row['STATUS'] == 'APROVADO' else ''
+
+        # Constrói as colunas com os valores que passaram na validação
+        return pd.Series({
+            'HT': ht_value,
+            'HJ': hj_value,
+            'ST': st_value,
+        })
+    except Exception as e:
+        print(f"Erro: {e}")
+
+        # return
+        # pd.Series({'HT': '', 'HJ': '', 'ST': ''})
 
 
 # Função que insere '.' e '-' no número do CPF, caso tenha sido

@@ -70,21 +70,31 @@ def generate_excel_file(dataframe: any, employee_name: str, cpf: str):
             worksheet.set_column(1, 1, 20, workbook.add_format({'align': 'center'}))
             worksheet.set_column(2, 2, 25)
             worksheet.set_column(3, 6, 20, workbook.add_format({'align': 'center'}))
+            worksheet.set_column(7, 9, 10, workbook.add_format({'align': 'center'}))
 
             # Aplica bordas em toda as linhas e colunas que contenham dados
-            worksheet.conditional_format(f'A1:G{len(df_year)}', {
+            worksheet.conditional_format(f'A1:J{len(df_year)}', {
                 'type': 'no_blanks',
                 'format': workbook.add_format({'border': 1})
             })
 
+            # worksheet.write(row_index + 1, 7, sum_formula)
+
             # Itera sobre o DataFrame
             for row_index, row in df_year.iterrows():
+                # sum_formula = f'=SUM(H{len(df_year)}:H{row_index})'
+                # print(f'FORMULA: {sum_formula}')
+
+                if row.iloc[0] == 'TOTAIS':
+                    worksheet.merge_range(
+                        row_index, 0, row_index, 6, row.iloc[0], workbook.add_format(
+                            {'align': 'right','bold': True, 'font_color': 'red'}))
 
                 # Se a coluna 0 contiver as strings 'JUSTIFICATIVA' ou 'AVISO',
                 # copia o conteúdo da linha e mescla as células das colunas 1 até 6
                 # Se encontrar na coluna 0 (primeira coluna) as strings 'JUSTIFICATIVA' ou 'AVISO',
                 # aplica formatação
-                if (row.iloc[0] == 'JUSTIFICATIVA') or (row.iloc[0] == 'AVISO'):
+                elif (row.iloc[0] == 'JUSTIFICATIVA') or (row.iloc[0] == 'AVISO'):
                     worksheet.write(row_index, 0, row.iloc[0], custom_format_1)
                     # Se o tamanho do conteúdo da célula na coluna 1 for > do que 150 caracteres,
                     # aumenta a altura da linha para 50
@@ -105,14 +115,14 @@ def generate_excel_file(dataframe: any, employee_name: str, cpf: str):
                     if col_index == 0 and value.startswith('PONTO DIGITAL'):
                         worksheet.write(row_index, 0, row.iloc[0])
                         worksheet.merge_range(
-                            row_index, 0, row_index, 6, value, header_format
+                            row_index, 0, row_index, 9, value, header_format
                         )
 
                     if col_index == 0 and value.startswith('NÃO HÁ REGISTRO'):
                         worksheet.write(row_index, 0, row.iloc[0])
                         worksheet.set_row(row_index, 30)
                         worksheet.merge_range(
-                            row_index, 0, row_index, 6, value, workbook.add_format({
+                            row_index, 0, row_index, 9, value, workbook.add_format({
                                 'bg_color': '#FF8C00',
                                 'align': 'center',
                                 'valign': 'center',
@@ -137,8 +147,11 @@ def generate_excel_file(dataframe: any, employee_name: str, cpf: str):
                     elif col_index == 6 and isinstance(value, str) and value == 'APROVADO':
                         worksheet.write(row_index, col_index, value, green_bold_format)
 
+                    elif (col_index > 6 and col_index < 10):
+                        worksheet.write(row_index, col_index, value, workbook.add_format({'border': 1}))
+
                 # Se o índice da coluna for < 7 e nela contiver a string 'DATA ENTRADA',
                 # aplica formatação em toda a linha do cabeçalho das colunas
                 for col in range(len(row)):
-                    if col < 7 and 'DATA ENTRADA' in row.values:
+                    if col < 10 and 'DATA ENTRADA' in row.values:
                         worksheet.write(row_index, col, row.iloc[col], header_format)
