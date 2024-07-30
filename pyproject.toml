@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "sms-ponto-digital-consulta"
+name = "sms-ponto-consulta"
 version = "0.1.0"
 description = ""
 authors = ["Paulo Roberto De Morais <prmorais1302@gmail.com>"]
