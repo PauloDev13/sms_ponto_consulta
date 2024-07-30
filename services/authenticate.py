@@ -23,6 +23,7 @@ url_init = os.getenv("URL_INIT")
 username = os.getenv("USER")
 password = os.getenv("PASSWORD")
 
+
 # FUNÇÃO LOGIN
 def login():
     # Configuração do WebDriver
@@ -34,7 +35,7 @@ def login():
         # Acessa a URL que exibe a página de login
         driver.get(url_login)
 
-        # Verfica se a página HTML carregou os campos de login e senha
+        # Verifica se a página HTML carregou os campos de login e senha
         load_login = WebDriverWait(driver, 10).until(
             ec.presence_of_element_located((By.XPATH, "//*[@id='cpf']"))
         )
@@ -52,7 +53,7 @@ def login():
             st.stop()
 
         # Localiza o primeiro Iframe da página, entra nele, espera 1 segundo
-        # Localiza dentro Iframe o elemento que tem o box do recaptcha e clica
+        # Localiza dentro Iframe o elemento o box do recaptcha e clica
         # Sai do Iframe e volta para o html principal
         # Espera 30 segundos para que o usuário digite o captcha, se aparecer
         driver.switch_to.frame(0)
@@ -98,6 +99,7 @@ def login():
         print(f'Erro stacktrace: {ex_}')
         logout()
         return None
+
 
 # FUNÇÃO LOGOUT
 def logout():

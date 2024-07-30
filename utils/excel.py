@@ -12,6 +12,8 @@ file_path = os.getenv('PATH_FILE_BASE')
 if not file_path:
     raise ValueError('O caminho para o arquivo do Excel não está definido no .env')
 
+
+# Cria o arquivo Excel
 def generate_excel_file(dataframe: Dict[int, pd.DataFrame], employee_name: str, cpf: str):
     file_name = os.path.join(file_path, f'{employee_name} - CPF_{cpf}.xlsx')
 
@@ -21,7 +23,15 @@ def generate_excel_file(dataframe: Dict[int, pd.DataFrame], employee_name: str, 
             workbook = writer.book
             worksheet = writer.sheets[str(year)]
 
+            # Chama a função (define_formats) do módulo (format_excel)
+            #  passando a planilha do Excel (workbook) que será criada
+            # e atribui a variável (formats)
             formats = format_excel.define_formats(workbook)
+
+            # Chama a função (apply_formatting) do módulo (format_excel),
+            # passando as planilhas (worksheet, o Dataframe (df_year) e a
+            # variável (formats) definida anteriorment. Essa função aplica
+            # as formatações nas planilhas que serão salvas no arquivo Excel.
             format_excel.apply_formatting(worksheet, df_year, formats)
 
 # def generate_excel_file(dataframe: Dict[int, pd.DataFrame], employee_name: str, cpf: str):

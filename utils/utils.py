@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 
 import os
-from datetime import datetime, time
+from datetime import datetime
 from time import sleep
 from dotenv import load_dotenv
 
@@ -71,11 +71,11 @@ def columns_update(row):
         tn_night_work = 1 if (
                 (tn_night_work_start and tn_night_work_end)
                 and (tn_night_work_start >= str_to_time('18:00:00')
-                and tn_night_work_end >= str_to_time('05:00:00'))
+                     and tn_night_work_end >= str_to_time('05:00:00'))
 
         ) else ''
 
-        # Se os dados na coluna 'STATUS' for igual a string 'APROVADO',
+        # Se os dados na coluna 'STATUS' for igual à string 'APROVADO',
         # retorna 1, se não, retorna uma string vazia ('')
         st_value = 1 if row['STATUS'] == 'APROVADO' else ''
 
@@ -99,7 +99,7 @@ def format_cpf(cpf: str) -> str:
     return f'{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}'
 
 
-# Instancia mensagem de alerta de acordo com os parâmetro informados
+# Instancia mensagem de alerta de acordo com os parâmetros informados
 def default_msg(msg: str, icon_msg: str):
     try:
         match icon_msg:
@@ -120,8 +120,9 @@ def default_msg(msg: str, icon_msg: str):
         return toast_msg
 
     except Exception as ex:
-        default_msg('Erro na messege', 'error')
+        default_msg('Erro na mensagem', 'error')
         print(f'Erro stacktrace: {ex}')
+
 
 # Função para validar as datas
 def validate_dates(date_start, date_end):
@@ -207,7 +208,7 @@ def form_callback():
         # Valida as datas
         dates_valid = validate_dates(date_start, date_end)
 
-    # Se datas e CPF forem válidas, extrai os meses e anos de inícil e final
+    # Se datas e CPF forem válidas, extrai os meses e anos de inícial e final
     if cpf_valid and dates_valid:
         month_start = date_start.month
         year_start = date_start.year
@@ -226,7 +227,7 @@ def form_callback():
                 # Exibe um spinner até que a funçao 'data_fetch'
                 # do módulo 'extrator_data' conclua a execução
                 with st.spinner(f'Processamento em andamento, AGUARDE...'):
-                    result = extractor_data.data_fetch(
+                    extractor_data.data_fetch(
                         cpf_input, month_start, year_start, month_end, year_end, st.session_state.driver
                     )
 
@@ -234,15 +235,14 @@ def form_callback():
                 default_msg('Arquivo criado com sucesso!', 'success')
 
         else:
-            # Se já existir uma sessão aberta no Stremlit, repete o processo de geração do arquivo
-            with st.spinner('Processamento em andamento, AGUARDE...') as spinner:
+            # Se já existir uma sessão aberta no Streamlit, repete o processo de geração do arquivo
+            with st.spinner('Processamento em andamento, AGUARDE...'):
                 extractor_data.data_fetch(
                     cpf_input, month_start, year_start, month_end, year_end, st.session_state.driver
                 )
 
             # Se não houver erros no processamento, exibe mensagem de sucesso
             default_msg('Arquivo criado com sucesso!', 'success')
-
 
 # def generate_excel_file(dataframe: any, employee_name: str, cpf: str):
 #

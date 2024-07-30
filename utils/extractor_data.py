@@ -1,3 +1,5 @@
+import sys
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
@@ -19,7 +21,6 @@ from dotenv import load_dotenv
 from utils import utils, excel
 from services import authenticate
 
-
 # Carrega o arquivo .env
 load_dotenv()
 
@@ -39,7 +40,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
         end_date = datetime.date(year_end, month_end, 1)
 
         # Enquanto a data inicial for menor que a data final,
-        # são atribuídos as variáves 'month' e 'year' os valores
+        # são atribuídos as variáveis 'month' e 'year' os valores
         # do mês e ano extraídos das datas informadas
         while current_date <= end_date:
             month = current_date.month
@@ -114,21 +115,20 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 # ] = '---'
 
                 # Finaliza a limpeza dos dados no Dataframe (df_table
-                # com o seguintes critérios:
-                # 1 - São selecionadas as colunas TRABALHADA e HORA JUSTIFICADA que forem difentes de '---'
+                # com os seguintes critérios:
+                # 1 - São selecionadas as colunas TRABALHADA e HORA JUSTIFICADA que forem diferentes de '---'
                 # 2 - ou as colunas STATUS igual 'APROVADO' e DATA ENTRADA igual a 'JUSTIFICATIVA'
                 df_result = df_table[
                     (df_table['TRABALHADA'] != '---')
                     | (df_table['HORA JUSTIFICADA'] != '---')
                     | (df_table['STATUS'] == 'APROVADO')
                     | (df_table['DATA ENTRADA'] == 'JUSTIFICATIVA')
-                ]
+                    ]
 
-                # Array de string com as colunas do Datafre (df_table) que serão verificadas
+                # Array de string com as colunas do Dataframe(df_table) que serão verificadas
                 columns_to_check = [
                     'DATA ENTRADA', 'ENTRADA', 'DATA SAÍDA', 'SAÍDA',
                     'TRABALHADA', 'HORA JUSTIFICADA', 'STATUS', 'HT', 'HJ', 'ST', 'ADN']
-
 
                 # Verifica onde todas as colunas do dataframe estão vazias
                 all_empty: bool = (
@@ -136,7 +136,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                         | (df_result[columns_to_check] == '').all(axis=1))
 
                 # Cria uma nova linha com mensagem de alerta,
-                # secrita na primeira céluna da coluna para os
+                # escrita na primeira célula da coluna para os
                 # meses que não retornam dados.
                 message_row = (
                         [f'NÃO HÁ REGISTROS PARA O MÊS {month_name}/{year} - '
@@ -153,7 +153,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                     df_with_message = pd.concat([pd.DataFrame(
                         [empty_row, message_row], columns=columns), df_result], ignore_index=True)
                 else:
-                    # Se não, atribui ao Datafram (df_with_message) o Dataframe (df_result) original.
+                    # Se não, atribui ao Dataframe (df_with_message) o Dataframe (df_result) original.
                     df_with_message = df_result
 
                 # Se o ano não existir no dicionário 'data_by_year',
@@ -162,34 +162,47 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                     # Define a mensagem inicial
                     header_message_1 = f'PONTO DIGITAL - {employee_name} - CPF: {cpf} - {month_name}/{year}'
 
-                    # Cria DataFrame (data_by_year[year])
+                    # Atualiza o DataFrame (data_by_year[year]) inserindo
+                    # das linhas de identificação e cabeçalho
                     data_by_year[year] = pd.DataFrame([
-                        [header_message_1]  + [''] * (len(columns) - 1), # Primeira linha com identificação
-                        list(columns) # Segunda linha com o nome das colunas
+                        [header_message_1] + [''] * (len(columns) - 1),  # Primeira linha com identificação
+                        list(columns),  # Segunda linha com o nome das colunas
                     ], columns=columns)
 
+                    # Linha com a string 'TOTAIS' na primeira célula e
+                    # vazia nas demais (array ['TOTAIS'], [''], [''], ['']...
+                    totals_row = ['TOTAIS'] + [''] * (len(columns) - 1)
+
+                    # Cria Daframe (df_line_empty) com a linha onde será impresso 'TOTAIS'
+                    df_totals_row = pd.DataFrame([totals_row], columns=columns)
+
                     # Atualiza o Dataframe (data_by_year) mesclando com o Dataframe (df_with_message)
-                    data_by_year[year] = pd.concat(
-                        [data_by_year[year], df_with_message], ignore_index=True)
+                    data_by_year[year] = pd.concat([
+                        data_by_year[year], # Dataframe vazio, com linhas de identificação e cabeçalho
+                        df_with_message, # Dataframe com os dados dos meses
+                        df_totals_row # Dataframe com a linha 'TOTAIS'
+                    ], ignore_index=True)
                 else:
                     # Define mensagem de identificação exibida
                     # acima das colunas de cada mês
                     header_message_2 = f'PONTO DIGITAL - {employee_name} - CPF: {cpf} - {month_name}/{year}'
 
-                    # Linha vazia (array [''], [''], [''], ['']...
-                    empty_row = ['TOTAIS'] + [''] * (len(columns) -1)
-
                     # Cria Dataframe(df_employee_row) para exibir informações de cada mês
                     df_employee_row = pd.DataFrame([
-                        empty_row, # Linha vazia no fim de cada mês
-                        [header_message_2] + [''] * (len(columns) - 1), # Linha com identificação
-                        list(columns) # Linha com os nomes das colunas (cabeçalho)
+                        [header_message_2] + [''] * (len(columns) - 1),  # Linha com identificação
+                        list(columns),  # Linha com os nomes das colunas (cabeçalho)
                     ], columns=columns)
 
                     # Atualiza o Dataframe (data_by_year) mesclando os Dataframes
-                    # (df_employee_row e df_with_message)
-                    data_by_year[year] = pd.concat(
-                        [data_by_year[year], df_employee_row, df_with_message], ignore_index=True
+                    # (df_employee_row, df_with_message e df_line_empty). Observar
+                    # que a sequência como os Dataframes são concatenados influencia
+                    # na visualização das informações.
+                    data_by_year[year] = pd.concat([
+                        data_by_year[year], # Dataframe vazio
+                        df_employee_row, # Insere as linhas de identificação e as colunas do cabeçalho
+                        df_with_message, # Insere as linhas com os dados propriamente ditos
+                        df_totals_row], # Insere a linha de totais
+                        ignore_index=True
                     )
 
             # Se ocorrer erro durante o processo de coleta e montagem de dados no DataFrame,
@@ -202,17 +215,18 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
                 if 'driver' in st.session_state.driver:
                     authenticate.logout()
+                    sys.exit()
 
             # Incrementa em um mês a data inicial
             current_date += datetime.timedelta(days=32)
             # Modifica o dia da data inicial para o primeiro dia do mês
             current_date = current_date.replace(day=1)
 
-        ########## FIM DO LAÇO WHILE ###########
+        # ------------ FIM DO LAÇO WHILE -------------
 
             # Depuração: Imprime o conteúdo do dicionário data_by_year
-            for year, df in data_by_year.items():
-                print(f'Mês/Ano: {month}/{year}\nLinhas por ano: {len(df)}')
+            # for year, df in data_by_year.items():
+            #     print(f'Mês/Ano: {month}/{year}\nLinhas por cada ano: {len(df)}')
 
         # Chama a função que cria, formata e salva o arquivo Excel
         excel.generate_excel_file(data_by_year, employee_name, cpf)
@@ -227,5 +241,3 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
         # Retorna falso em caso de erro
         return False
-
-

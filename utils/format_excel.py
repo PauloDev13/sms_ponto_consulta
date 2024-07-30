@@ -1,14 +1,14 @@
 import os
 from dotenv import load_dotenv
 
-
 load_dotenv()
 file_path = os.getenv('PATH_FILE_BASE')
 
 if not file_path:
     raise ValueError("O caminho do arquivo base não está definido no .env")
 
-
+# Fução que retorna um dicionário com a formatação
+# para células individuais do arquivo Excel
 def define_formats(workbook):
     formats = {
         'header': workbook.add_format({
@@ -63,14 +63,15 @@ def define_formats(workbook):
         'col_center': workbook.add_format({'align': 'center'}),
         'totais': workbook.add_format({
             'align': 'right',
-             'bold': True,
-             'font_color':
-                 'red'
+            'bold': True,
+            'font_color': 'red'
         })
     }
     return formats
 
 
+# Função que implementa condicionais e formatação
+# (usando a função define_formats) em células individuais do arquivo Excel
 def apply_formatting(worksheet, df_year, formats):
     worksheet.set_column(0, 0, 25)
     worksheet.set_column(1, 1, 20, formats['col_center'])
@@ -125,7 +126,6 @@ def apply_formatting(worksheet, df_year, formats):
         for col in range(len(row)):
             if col < 11 and 'DATA ENTRADA' in row.values:
                 worksheet.write(row_index, col, row.iloc[col], formats['header'])
-
 
 # def generate_excel_file(dataframe: Dict[int, pd.DataFrame], employee_name: str, cpf: str):
 #     file_name = os.path.join(file_path, f'{employee_name} - CPF_{cpf}.xlsx')
