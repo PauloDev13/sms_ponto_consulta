@@ -5,6 +5,8 @@ from selenium.common.exceptions import TimeoutException
 
 import pandas as pd
 
+import streamlit as st
+
 from bs4 import BeautifulSoup
 
 import os
@@ -144,9 +146,8 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 # cria linha vazia
                 empty_row = [''] * len(columns)
 
-
                 # Se a variável 'all_empty' retornar verdadeiro
-                if all_empty.empty:
+                if all_empty.all():
                     # cria Dataframe (df_with_message) com a mensagem de alerta
                     # concatenando com o Dataframe (df_result)
                     df_with_message = pd.concat([pd.DataFrame(
@@ -199,7 +200,8 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
                 print(f'Erro ao carregar dados: {e}')
 
-                authenticate.logout()
+                if 'driver' in st.session_state.driver:
+                    authenticate.logout()
 
             # Incrementa em um mês a data inicial
             current_date += datetime.timedelta(days=32)
