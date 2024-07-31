@@ -1,6 +1,6 @@
 import os
 import sys
-# import streamlit.web.cli as stcli
+import streamlit.web.cli as stcli
 import logging
 
 # Configurando logs
