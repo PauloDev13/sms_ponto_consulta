@@ -1,58 +1,61 @@
-import streamlit
-import streamlit.web.cli as stcli
-import streamlit.runtime.scriptrunner.magic_funcs
+from cx_Freeze import setup, Executable
 
-import pandas
-
-import selenium
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import (
-    TimeoutException,
-    NoSuchWindowException,
-    ElementClickInterceptedException)
-from selenium.webdriver.support import expected_conditions as ec
-
-from dotenv import load_dotenv
-
-from bs4 import BeautifulSoup
-
-from time import sleep
-import xlsxwriter
-import lxml
-import openpyxl
-import html5lib
 import os, sys
-
-import datetime
-from datetime import datetime
-import locale
-import calendar
-from io import StringIO
-
-from services import authenticate
-from utils import utils
-from utils import extractor_data
-
 import logging
 
 # Configurando logs
 logging.basicConfig(level=logging.DEBUG, filename="setup.log", filemode='w')
 logging.debug("Iniciando setup.py")
 
+# Configurações do cx_Freeze
+build_exe_options = {
+    "packages": [
+        "os", "sys", "streamlit",
+        "pandas", "selenium",
+        "xlsxwriter", "bs4"
+    ],
+    "includes": ["streamlit.web.cli", "dotenv"],
+    "include_files": [
+        ('utils', 'utils'),
+        ('services', 'services'),
+        ('.env', '.env'),
+        ('main.py', 'main.py'),
+        ('start_streamlit.py', 'start_streamlit.py')
+    ],
+    "excludes": []
+}
 
-def resolver_path(path):
-    resolved_path = os.path.abspath(os.path.join(os.getcwd(), path))
-    return resolved_path
+# Define o executável, com base em Win32GUI para ocultar o console
+executables = [
+    Executable(
+        script="start_streamlit.py",
+        base="Win32GUI" if sys.platform == "win32" else None,
+        target_name="ponto_sms_app.exe"
+    )
+]
 
-if __name__ == '__main__':
-    sys.argv = [
-        'streamlit',
-        'run',
-        resolver_path('main.py'),
-        '--global.developmentMode=false'
-    ]
-    sys.exit(stcli.main())
+setup(
+    name="PontoSMSApp",
+    version="0.1",
+    description="Aplicativo Streamlit",
+    options={"build_exe": build_exe_options},
+    executables=executables
+)
 
 logging.debug("Finalizando setup.py")
+# Código de inicialização do Streamlit
+
+
+# def resolver_path(path):
+#     resolved_path = os.path.abspath(os.path.join(os.getcwd(), path))
+#     return resolved_path
+#
+# if __name__ == '__main__':
+#     sys.argv = [
+#         'streamlit',
+#         'run',
+#         resolver_path('main.py'),
+#         '--global.developmentMode=false'
+#     ]
+#     sys.exit(stcli.main())
+#

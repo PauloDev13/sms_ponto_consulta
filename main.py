@@ -47,5 +47,8 @@ def main():
         if submit_button:
             utils.form_callback()
 
+
 if __name__ == '__main__':
     main()
+
+logging.debug("finalizando main.py")
