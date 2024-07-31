@@ -1,4 +1,5 @@
 import os
+import xlsxwriter
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -78,63 +79,107 @@ def apply_formatting(worksheet, df_year, formats):
     worksheet.set_column(2, 2, 25)
     worksheet.set_column(3, 6, 20, formats['col_center'])
     worksheet.set_column(7, 10, 5, formats['col_center'])
-
+    # Insere bordas na planilha onde as células não são vazias
     worksheet.conditional_format(f'A1:J{len(df_year)}', {
         'type': 'no_blanks',
         'format': formats['no_blanks']
     })
 
+    last_header_index = -1
+    # Itera sobre as linhas do Dataframe (df_year) extraindo
+    # os índices e o conteúdo de cada linha
     for row_index, row in df_year.iterrows():
+        if row.iloc[0] == 'DATA ENTRADA':
+            last_header_index = row_index
+            print(f'ÚLTIM INDICE: {last_header_index}')
+
+        # Se na linha índice 0 e na coluna índice 0 o conteúdo
+        # da célula form igual a 'TOTAIS', mescla todas as
+        # células da linha e aplica formatação
         if row.iloc[0] == 'TOTAIS':
             worksheet.merge_range(
                 row_index, 0, row_index, 6, row.iloc[0], formats['totais'])
-
+        # Se na linha índice 0 e na coluna índice 0 o conteúdo
+        # da célula form igual a ''JUSTIFICATIVA' ou 'AVISO', aplica formatação
         elif row.iloc[0] in ['JUSTIFICATIVA', 'AVISO']:
             worksheet.write(row_index, 0, row.iloc[0], formats['custom_1'])
+            # Se na linha índice 0 e coluna índice 1 o conteúdo da célula
+            # for >= a 145 caracteres e <= 380, aumenta a altura da linha para 30
             if 145 <= len(row.iloc[1]) <= 380:
                 worksheet.set_row(row_index, 35)
+            # Se na mesma linha e coluna o conteúdo da célula for >= a 381,
+            # aumenta a altura da linha para 50
             elif len(row.iloc[1]) >= 381:
                 worksheet.set_row(row_index, 50)
+            # Mescla as células da linha a partir da coluna índice 1 até
+            # a índice 6 e aplica formatação
             worksheet.merge_range(
                 row_index, 1, row_index, 6, row.iloc[1], formats['custom_2'])
-
+        # Itera sobre as linhas extraindo o índice e o valor em cada coluna
         for col_index, value in enumerate(row):
+            # Se a coluna for == a 0 e o valor da célula começar com a string
+            # 'PONTO DIGITAL', mescla as células de toda a linha
             if col_index == 0 and value.startswith('PONTO DIGITAL'):
-                worksheet.write(row_index, 0, row.iloc[0])
+                # worksheet.write(row_index, 0, row.iloc[0])
                 worksheet.merge_range(
                     row_index, 0, row_index, 10, value, formats['header'])
-
-            if col_index == 0 and value.startswith('NÃO HÁ REGISTRO'):
-                worksheet.write(row_index, 0, row.iloc[0])
+            # Se a coluna for == a 0 e o valor da célula começar com a string
+            # 'NÃO HÁ REGISTRO', mescla as células de toda a linha
+            elif col_index == 0 and value.startswith('NÃO HÁ REGISTRO'):
+                # worksheet.write(row_index, 0, row.iloc[0])
                 worksheet.set_row(row_index, 30)
                 worksheet.merge_range(
                     row_index, 0, row_index, 10, value, formats['warning'])
-
-            if col_index == 4 and isinstance(value, str) and value >= '12:00:00':
+            # Se a coluna for == a 4 e o valor da célula for >= a '12:00:00'
+            # aplica formatação background verde e fonte branca.
+            elif col_index == 4 and isinstance(value, str) and value >= '12:00:00':
                 worksheet.write(row_index, col_index, value, formats['green_bold'])
-
+            # Se a coluna for == a 4 e o valor da célula for <= a '12:00:00'
+            # e diferente da string ('---') ou vazia (''), aplica formatação
+            # background azul e fonte branca.
             elif (col_index == 4 and isinstance(value, str)
                   and value < '12:00:00' and value not in ['---', '']):
                 worksheet.write(row_index, col_index, value, formats['blue_bold'])
-
+            # Se a coluna for == a 6 e o valor da célula for == a 'APROVADO'
+            # aplica formatação background verde e fonte branca.
             elif col_index == 6 and isinstance(value, str) and value == 'APROVADO':
                 worksheet.write(row_index, col_index, value, formats['green_bold'])
+            # Se o índice da coluna for menor que 11 e a string 'DATA ENTRADA'
+            # estiver em alguma célula da linha, aplica formatação
+            elif col_index < 11 and 'DATA ENTRADA' in row.values:
+                worksheet.write(row_index, col_index, row.iloc[col_index], formats['header'])
 
+            elif value == 'TOTAIS':
+                merged_cells = 7
+                formula_col = merged_cells
+
+                start_row = last_header_index + 1 if last_header_index >= 0 else 1
+
+                # if last_header_index >= 0:
+                #     start_row = last_header_index + 1
+                # else:
+                #     start_row = 1
+
+                end_row = row_index - 1
+
+                start_cell = xlsxwriter.utility.xl_rowcol_to_cell(start_row, formula_col)
+                end_cell = xlsxwriter.utility.xl_rowcol_to_cell(end_row, formula_col)
+
+                if start_row <= end_row:
+                    formula = f'=SUM({start_cell}:{end_cell})'
+                    print(f'FORMULA\n{formula}')
+                    worksheet.write_formula(row_index, formula_col, formula, formats['header'])
+                else:
+                    print(f'NÃO FORMULA\n{formula}')
+                    worksheet.write(row_index, formula_col, 0)
+            # Se o índice da coluna for > a 6 e < 11, aplica a formação que insere
+            # bordas em células com conteúdo diferente de vazio
             elif 6 < col_index < 11:
                 worksheet.write(row_index, col_index, value, formats['no_blanks'])
 
-        for col in range(len(row)):
-            if col < 11 and 'DATA ENTRADA' in row.values:
-                worksheet.write(row_index, col, row.iloc[col], formats['header'])
-
-# def generate_excel_file(dataframe: Dict[int, pd.DataFrame], employee_name: str, cpf: str):
-#     file_name = os.path.join(file_path, f'{employee_name} - CPF_{cpf}.xlsx')
-#
-#     with pd.ExcelWriter(file_name, engine='xlsxwriter') as writer:
-#         for year, df_year in dataframe.items():
-#             df_year.to_excel(writer, sheet_name=str(year), index=False, startrow=0, header=False)
-#             workbook = writer.book
-#             worksheet = writer.sheets[str(year)]
-#
-#             formats = define_formats(workbook)
-#             apply_formatting(worksheet, df_year, formats)
+        # Itera sobre o número de colunas por linha extraindo o índice de cada coluna
+        # for col in range(len(row)):
+            # Se o índice da coluna for menor que 11 e a string 'DATA ENTRADA'
+            # estiver em alguma célula da linha, aplica formatação
+            # if col < 11 and 'DATA ENTRADA' in row.values:
+            #     worksheet.write(row_index, col, row.iloc[col], formats['header'])

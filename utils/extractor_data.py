@@ -213,9 +213,9 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
                 print(f'Erro ao carregar dados: {e}')
 
-                if 'driver' in st.session_state.driver:
-                    authenticate.logout()
-                    sys.exit()
+                # faz logout e saí do sistema.
+                authenticate.logout()
+                sys.exit()
 
             # Incrementa em um mês a data inicial
             current_date += datetime.timedelta(days=32)

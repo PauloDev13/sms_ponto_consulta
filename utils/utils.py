@@ -216,8 +216,9 @@ def form_callback():
         year_end = date_end.year
 
         # Verifica se existe uma sessão no Streamlit para o usuário logado
-        # Se NÃO, chama a função 'login' do módulo 'authenticate' que retorna uma instância do navegador
-        # Armazena a instância retornada numa sessão do Streamlit
+        # Se NÃO, chama a função 'login' do módulo 'authenticate'
+        # que retorna uma instância do navegador e armazena a instância
+        # retornada na sessão do Streamlit
         if 'driver' not in st.session_state:
             if driver := authenticate.login():
                 st.session_state.driver = driver
