@@ -91,6 +91,7 @@ def apply_formatting(worksheet, df_year, formats):
     for row_index, row in df_year.iterrows():
         if row.iloc[0] == 'DATA ENTRADA':
             last_header_index = row_index
+
             print(f'ÚLTIM INDICE: {last_header_index}')
 
         # Se na linha índice 0 e na coluna índice 0 o conteúdo
@@ -168,7 +169,7 @@ def apply_formatting(worksheet, df_year, formats):
                 if start_row <= end_row:
                     formula = f'=SUM({start_cell}:{end_cell})'
                     print(f'FORMULA\n{formula}')
-                    worksheet.write_formula(row_index, formula_col, formula, formats['header'])
+                    worksheet.write_formula(row_index, formula_col, formula)
                 else:
                     print(f'NÃO FORMULA\n{formula}')
                     worksheet.write(row_index, formula_col, 0)
