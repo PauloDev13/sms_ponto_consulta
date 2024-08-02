@@ -30,6 +30,7 @@ def login():
     options = webdriver.ChromeOptions()
     # options.add_argument("--headless=new")
     driver = webdriver.Chrome(options=options)
+    driver.maximize_window()
 
     try:
         # Acessa a URL que exibe a página de login
@@ -82,7 +83,7 @@ def login():
         # Retorna uma instância do navegador.
         return driver
 
-    # Se ocorrer erro no processo de login exibe mensagem
+    # Se ocorrer erros no processo de login exibe mensagens
     except ElementClickInterceptedException as e:
         utils.default_msg('Erro ao clicar num elemento da página! Tente novamente', 'error')
         print(f'Erro stacktrace: {e}')
