@@ -39,22 +39,3 @@ def generate_excel_file(data_dic: Dict[int, pd.DataFrame], employee_name: str, c
             # variável (formats) definida anteriorment. Essa função aplica
             # as formatações nas planilhas que serão salvas no arquivo Excel.
             format_excel.apply_formatting(worksheet, df_year, formats)
-
-            # formats = {
-            #     'numeric': workbook.add_format({'num_format': '#,##0'})
-            # }
-            #
-            # worksheet.set_column('H:H', None, formats['numeric'])
-
-            # cell_1 = 'K16'
-            # cell_2 = 'H3'
-            # cell_3 = 'H15'
-            #
-            # formula = f'=SUM({cell_2}:{cell_3})'
-
-            # worksheet.write_array_formula('K16', f'{formula}')
-            # worksheet.write_formula('K16', formula)
-            # worksheet.write_formula('L16', 'K16')
-
-            # workbook.set_calc_mode('manual')
-            # workbook.set_calc_mode('auto')
