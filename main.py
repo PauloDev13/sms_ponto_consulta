@@ -42,6 +42,7 @@ def main():
         # # Fecha a Session State e encerra o navegador
         if logout_button:
             authenticate.logout()
+            utils.kill_streamlit('app_sms.exe')
 
         # Chama a função principal da aplicação
         if submit_button:

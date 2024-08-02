@@ -4,7 +4,8 @@ import os
 from typing import Dict
 from dotenv import load_dotenv
 
-from utils import format_excel
+from utils import format_excel, utils
+from services import authenticate
 
 load_dotenv()
 file_path = os.getenv('PATH_FILE_BASE')
@@ -31,13 +32,21 @@ def generate_excel_file(data_dic: Dict[int, pd.DataFrame], employee_name: str, c
             workbook = writer.book
             worksheet = writer.sheets[str(year)]
 
-            # Chama a função (define_formats) do módulo (format_excel)
-            #  passando a planilha do Excel (workbook) que será criada
-            # e atribui a variável (formats)
-            formats = format_excel.define_formats(workbook)
+            try:
+                # Chama a função (define_formats) do módulo (format_excel)
+                #  passando a planilha do Excel (workbook) que será criada
+                # e atribui a variável (formats)
+                formats = format_excel.define_formats(workbook)
 
-            # Chama a função (apply_formatting) do módulo (format_excel),
-            # passando a planilha (worksheet), o Dataframe (df_year) e a
-            # variável (formats) definida anteriormente. Essa função aplica
-            # as formatações nas planilhas que serão salvas no arquivo Excel.
-            format_excel.apply_formatting(worksheet, df_year, formats)
+                # Chama a função (apply_formatting) do módulo (format_excel),
+                # passando a planilha (worksheet), o Dataframe (df_year) e a
+                # variável (formats) definida anteriormente. Essa função aplica
+                # as formatações nas planilhas que serão salvas no arquivo Excel.
+                format_excel.apply_formatting(worksheet, df_year, formats)
+            except Exception as e:
+                utils.default_msg(f'Erro ao gerar a planilha {file_path}', 'error')
+                print(f'Erro ao gerar a planilha {e}')
+
+                # Faz logout na aplicação.
+                authenticate.logout()
+
