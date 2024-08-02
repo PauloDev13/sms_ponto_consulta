@@ -7,7 +7,7 @@ from selenium.common.exceptions import (
     ElementClickInterceptedException)
 from selenium.webdriver.support import expected_conditions as ec
 
-import os
+import os, sys
 import streamlit as st
 from time import sleep
 from dotenv import load_dotenv

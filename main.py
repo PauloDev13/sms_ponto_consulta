@@ -3,11 +3,11 @@ import streamlit as st
 from services import authenticate
 from utils import utils
 
-import logging
+# import logging
 
 # Configurando logs
-logging.basicConfig(level=logging.DEBUG, filename="main.log", filemode='w')
-logging.debug("Iniciando main.py")
+# logging.basicConfig(level=logging.DEBUG, filename="main.log", filemode='w')
+# logging.debug("Iniciando main.py")
 
 
 # Configuração do título da página do Streamlit
@@ -52,4 +52,4 @@ def main():
 if __name__ == '__main__':
     main()
 
-logging.debug("finalizando main.py")
+# logging.debug("finalizando main.py")
