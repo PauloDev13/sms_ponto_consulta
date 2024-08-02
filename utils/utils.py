@@ -3,6 +3,8 @@ import streamlit as st
 import pandas as pd
 
 import os
+import psutil
+import signal
 from datetime import datetime
 from time import sleep
 from dotenv import load_dotenv
@@ -194,6 +196,19 @@ def fields_clear():
     st.session_state['date_start'] = None
     st.session_state['date_end'] = None
 
+
+def kill_streamlit(process_name: str):
+    for process in psutil.process_iter(['pid', 'name']):
+        try:
+            if process.info['name'] == process_name:
+                # Enviar um sinal SIGTERM para o processo
+                os.kill(process.info['pid'], signal.SIGTERM)
+                default_msg('Servidor encerrado!', 'success')
+                break
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    else:
+        default_msg(f'Processo {process_name} não encontrado!', 'info')
 
 # Função de callback
 def form_callback():

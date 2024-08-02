@@ -110,3 +110,5 @@ def logout():
         st.session_state.driver.quit()
         del st.session_state.driver
         utils.default_msg('Aplicação encerrada!', 'info')
+
+    utils.kill_streamlit('app_sms.exe')
