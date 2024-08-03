@@ -7,7 +7,7 @@ from selenium.common.exceptions import (
     ElementClickInterceptedException)
 from selenium.webdriver.support import expected_conditions as ec
 
-import os, sys
+import os
 import streamlit as st
 from time import sleep
 from dotenv import load_dotenv
@@ -110,4 +110,3 @@ def logout():
         st.session_state.driver.quit()
         del st.session_state.driver
         utils.default_msg('Aplicação encerrada!', 'info')
-        sys.exit()

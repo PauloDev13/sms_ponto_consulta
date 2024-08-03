@@ -1,5 +1,3 @@
-import sys
-
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
@@ -11,7 +9,7 @@ import streamlit as st
 
 from bs4 import BeautifulSoup
 
-import os
+import os, sys
 import datetime
 import locale
 import calendar
@@ -238,7 +236,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
         utils.default_msg('Erro ao gerar arquivo!', 'error')
         print(f'Erro ao gerar arquivo: {e}')
 
-        # faz logout e saí do sistema.
-        authenticate.logout()
+        # st.stop()
+
         # Retorna falso em caso de erro
         return False

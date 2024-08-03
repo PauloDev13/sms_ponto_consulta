@@ -47,6 +47,3 @@ def generate_excel_file(data_dic: Dict[int, pd.DataFrame], employee_name: str, c
                 utils.default_msg(f'Erro ao gerar a planilha {file_path}', 'error')
                 print(f'Erro ao gerar a planilha {e}')
 
-                # Faz logout na aplicação.
-                authenticate.logout()
-

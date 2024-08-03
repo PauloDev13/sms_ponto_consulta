@@ -197,6 +197,8 @@ def fields_clear():
     st.session_state['date_end'] = None
 
 
+# função para matar o processo do servidor do Streamlit
+# ao clicar no botão sair.
 def kill_streamlit(process_name: str):
     for process in psutil.process_iter(['pid', 'name']):
         try:
@@ -247,20 +249,22 @@ def form_callback():
                 # Exibe um spinner até que a funçao 'data_fetch'
                 # do módulo 'extrator_data' conclua a execução
                 with st.spinner(f'Processamento em andamento, AGUARDE...'):
-                    extractor_data.data_fetch(
+                    result = extractor_data.data_fetch(
                         cpf_input, month_start, year_start, month_end, year_end, st.session_state.driver
                     )
 
-                # Se não houver erros no processamento, exibe mensagem de sucesso
-                default_msg('Arquivo criado com sucesso!', 'success')
+                if result:
+                    # Se não houver erros no processamento, exibe mensagem de sucesso
+                    default_msg('Arquivo criado com sucesso!', 'success')
 
         else:
             # Se já existir uma sessão aberta no Streamlit, repete o processo de geração do arquivo
             with st.spinner('Processamento em andamento, AGUARDE...'):
-                extractor_data.data_fetch(
+                result = extractor_data.data_fetch(
                     cpf_input, month_start, year_start, month_end, year_end, st.session_state.driver
                 )
 
-            # Se não houver erros no processamento, exibe mensagem de sucesso
-            default_msg('Arquivo criado com sucesso!', 'success')
+            if result:
+                # Se não houver erros no processamento, exibe mensagem de sucesso
+                default_msg('Arquivo criado com sucesso!', 'success')
 
