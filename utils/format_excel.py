@@ -70,7 +70,7 @@ def define_formats(workbook):
             'font_size': 20,
             'border': 1,
         }),
-        'col_center': workbook.add_format({'align': 'center'}),
+        'col_center': workbook.add_format({'align': 'center', 'locked': False}),
         'results': workbook.add_format({
             'bold': True,
             'align': 'center',
@@ -259,12 +259,10 @@ def apply_formatting(worksheet, df_year, formats):
                             formats['results']
                         )
 
-
                 else:
                     worksheet.write(row_index, formula_col, 0)
 
-
-        # worksheet.protect(password_workbook)
+        worksheet.protect(password_workbook)
 
         # Itera sobre o número de colunas por linha extraindo o índice de cada coluna
         # for col in range(len(row)):
