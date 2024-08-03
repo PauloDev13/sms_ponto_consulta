@@ -1,6 +1,6 @@
 import pandas as pd
 
-import os
+import os, sys
 from typing import Dict
 from dotenv import load_dotenv
 
@@ -46,4 +46,5 @@ def generate_excel_file(data_dic: Dict[int, pd.DataFrame], employee_name: str, c
             except Exception as e:
                 utils.default_msg(f'Erro ao gerar a planilha {file_path}', 'error')
                 print(f'Erro ao gerar a planilha {e}')
+                sys.exit(1)
 

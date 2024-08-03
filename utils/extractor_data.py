@@ -211,8 +211,10 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
                 print(f'Erro ao carregar dados: {e}')
 
+                sys.exit(1)
+
                 # faz logout e saí do sistema.
-                authenticate.logout()
+                # authenticate.logout()
 
             # Incrementa em um mês a data inicial
             current_date += datetime.timedelta(days=32)
@@ -236,7 +238,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
         utils.default_msg('Erro ao gerar arquivo!', 'error')
         print(f'Erro ao gerar arquivo: {e}')
 
-        # st.stop()
+        sys.exit(1)
 
         # Retorna falso em caso de erro
         return False
