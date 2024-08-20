@@ -77,29 +77,37 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 # da primeira table encontrada no HTML
                 df_table = pd.read_html(StringIO(str(soup_table)))[0]
 
+                # Atualiza o dataframe (df_table) substituindo o conteúdo das colunas
+                # DATA SAÍDA, SAÍDA, TRABALHADA, HORA JUSTIFICADA e STATUS para uma string '---'
+                # nas linhas onde a coluna DATA ENTRADA tem as palavra 'Férias'
+                df_table.loc[
+                    df_table['ENTRADA'].str.contains('Férias'),
+                    ['DATA SAÍDA', 'SAÍDA', 'TRABALHADA', 'HORA JUSTIFICADA', 'STATUS']
+                ] = '---'
+
                 # # Filtrar as linhas onde 'DATA ENTRADA' é igual 'AFASTAMENTO'
-                # df_filtered_removal = df_table[df_table['DATA ENTRADA'] == 'AFASTAMENTO']
+                df_filtered_removal = df_table[df_table['DATA ENTRADA'] == 'AFASTAMENTO']
 
                 # # # Remover duplicatas na coluna 'ENTRADA' dentro do subconjunto
-                # df_filtered_removal = df_filtered_removal.drop_duplicates(subset='ENTRADA')
+                df_filtered_removal = df_filtered_removal.drop_duplicates(subset='ENTRADA')
 
                 # # Filtrar as linhas onde 'DATA ENTRADA' não é 'AFASTAMENTO'
-                # df_filtered_without_removal = df_table[df_table['DATA ENTRADA'] != 'AFASTAMENTO']
+                df_filtered_without_removal = df_table[df_table['DATA ENTRADA'] != 'AFASTAMENTO']
 
                 # # Combinar o DataFrame sem duplicatas com o restante dos dados originais
-                # df_table = pd.concat([df_filtered_without_removal, df_filtered_removal])
+                df_table = pd.concat([df_filtered_without_removal, df_filtered_removal])
 
                 # Reset o índice se necessário (opcional)
                 # df_table = df_table.reset_index(drop=True)
 
-                # Verifica quais colunas têm nomes que não começam com "Unnamed".
+                # Verifica quais colunas têm cabeçalho cujo nome não começam com "Unnamed".
                 # Usa essa informação para selecionar e manter apenas essas colunas no DataFrame.
                 # Colunas "Unnamed" aparecem quando o Pandas encontra
                 # uma ou mais colunas sem nome de cabeçalho ou quando colunas extras geradas
                 # por acidente durante o processo de leitura ou gravação dos dados
                 df_table = df_table.loc[:, ~df_table.columns.str.contains('^Unnamed')]
 
-                # Cria um dicionário com as colunas que serão criadas.
+                # Cria um dicionário com as colunas que serão adicionadas.
                 # O conteúdo de todas é vazio e terão o mesmo número
                 # de linhas do Dataframe
                 new_columns = {
