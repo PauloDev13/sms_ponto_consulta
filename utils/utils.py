@@ -212,6 +212,7 @@ def kill_streamlit(process_name: str):
     else:
         default_msg(f'Processo {process_name} não encontrado!', 'info')
 
+
 # Função de callback
 def form_callback():
     # Pega os valores digitados no formulário vindos no Session State

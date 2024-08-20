@@ -50,7 +50,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
 
             # Monta e atribui a variável 'table' a URL com os query params
             # da pesquisa e abre no navegador
-            url_search = f'{url_data}?cpf={cpf}&mes={month}&ano={year}'
+            url_search = f'{url_data}?cpf={cpf}&mes={month}&ano={year}&unidade=149'
             driver.get(url_search)
 
             try:
@@ -76,6 +76,13 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 # Utiliza a biblioteca Pandas para montar DataFrame com todos os dados
                 # da primeira table encontrada no HTML
                 df_table = pd.read_html(StringIO(str(soup_table)))[0]
+
+                # Verifica quais colunas têm nomes que não começam com "Unnamed".
+                # Usa essa informação para selecionar e manter apenas essas colunas no DataFrame.
+                # Colunas "Unnamed" aparecem quando o Pandas encontra
+                # uma ou mais colunas sem nome de cabeçalho ou quando colunas extras geradas
+                # por acidente durante o processo de leitura ou gravação dos dados
+                df_table = df_table.loc[:, ~df_table.columns.str.contains('^Unnamed')]
 
                 # Cria um dicionário com as colunas que serão criadas.
                 # O conteúdo de todas é vazio e terão o mesmo número
@@ -121,7 +128,7 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                     | (df_table['HORA JUSTIFICADA'] != '---')
                     | (df_table['STATUS'] == 'APROVADO')
                     | (df_table['DATA ENTRADA'] == 'JUSTIFICATIVA')
-                    ]
+                ]
 
                 # Array de string com as colunas do Dataframe(df_table) que serão verificadas
                 columns_to_check = [
@@ -131,7 +138,8 @@ def data_fetch(cpf, month_start, year_start, month_end, year_end, driver):
                 # Verifica onde todas as colunas do dataframe estão vazias
                 all_empty: bool = (
                         df_result[columns_to_check].isna().all(axis=1)
-                        | (df_result[columns_to_check] == '').all(axis=1))
+                        | (df_result[columns_to_check] == '').all(axis=1)
+                )
 
                 # Cria uma nova linha com mensagem de alerta,
                 # escrita na primeira célula da coluna para os
